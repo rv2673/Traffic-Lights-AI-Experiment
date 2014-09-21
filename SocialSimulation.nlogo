@@ -69,7 +69,7 @@ to setup-globals
   set pedestrian-traffic-light-xpos 0
   set pedestrian-traffic-light-ypos 0
   
-  set pedestrian-viewing-range 15
+  set pedestrian-viewing-range 8
   
   set road-start-xpos 0
   set road-end-xpos  4
@@ -198,10 +198,13 @@ end
 
 to-report car-in-range? [ ycar yped ]
   ;; Map negative coordinates x to W - x (where W is world height)
-  let real-car-y (ycar + world-height) mod world-height
-  if real-car-y > yped and real-car-y < yped + pedestrian-viewing-range
+  let ycar2 (ycar + world-height) mod world-height
+  
+  let range1? (ycar  > yped and ycar  < yped + pedestrian-viewing-range)
+  let range2? (ycar2 > yped and ycar2 < yped + pedestrian-viewing-range)
+  
+  ifelse (range1? or range2?)
   [report true]
-  else
   [report false]
   
 end
