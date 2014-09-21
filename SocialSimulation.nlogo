@@ -69,7 +69,7 @@ to setup-globals
   set pedestrian-traffic-light-xpos 0
   set pedestrian-traffic-light-ypos 0
   
-  set pedestrian-viewing-range 10
+  set pedestrian-viewing-range 20
   
   set road-start-xpos 0
   set road-end-xpos  4
@@ -200,14 +200,14 @@ end
 to-report should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
   let y  ycor
-  let car-approaching?  any? cars with [ycor > pedestrian-traffic-light-ypos and ycor > y]
+  let car-approaching?  any? cars with [ycor < y + pedestrian-viewing-range and ycor > y]
   let average-profit mean [own-profit] of people with [walker-type != "cautious"]
   ;; cautious: only move if
   ;; 1. we are on or across the road or 
   ;; 2. the light is green and we will not get on the road or
   ;; 3. the light is green and and no car is approaching us and we will get on the road
   ifelse walker-type = "cautious" 
-  [   
+  [
     report cautious-should-move? movement
   ] 
   [
