@@ -69,7 +69,7 @@ to setup-globals
   set pedestrian-traffic-light-xpos 0
   set pedestrian-traffic-light-ypos 0
   
-  set pedestrian-viewing-range 20
+  set pedestrian-viewing-range 15
   
   set road-start-xpos 0
   set road-end-xpos  4
@@ -193,14 +193,23 @@ to update-adaptive-persons
   [
      set adaptive-gone-reckless true
   ]
-  
  
+end
+
+to-report car-in-range? [ ycar yped ]
+  ;; Map negative coordinates x to W - x (where W is world height)
+  let real-car-y (ycar + world-height) mod world-height
+  if real-car-y > yped and real-car-y < yped + pedestrian-viewing-range
+  [report true]
+  else
+  [report false]
+  
 end
 
 to-report should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
   let y  ycor
-  let car-approaching?  any? cars with [ycor < y + pedestrian-viewing-range and ycor > y]
+  let car-approaching?  any? cars with [car-in-range? ycor y] ;;[ycor < y + pedestrian-viewing-range and ycor > y]
   let average-profit mean [own-profit] of people with [walker-type != "cautious"]
   ;; cautious: only move if
   ;; 1. we are on or across the road or 
