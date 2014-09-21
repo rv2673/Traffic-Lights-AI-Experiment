@@ -12,6 +12,8 @@ globals [
   pedestrian-traffic-light-red?
   pedestrian-traffic-light-xpos
   pedestrian-traffic-light-ypos
+  
+  pedestrian-viewing-range            ;; in patches, world is 32x32 patches.
     
   road-start-xpos
   road-end-xpos
@@ -66,6 +68,8 @@ to setup-globals
   set pedestrian-traffic-light-red? true
   set pedestrian-traffic-light-xpos 0
   set pedestrian-traffic-light-ypos 0
+  
+  set pedestrian-viewing-range 10
   
   set road-start-xpos 0
   set road-end-xpos  4
@@ -228,7 +232,7 @@ end
 to-report cautious-should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
   let y  ycor
-  let car-approaching?  any? cars with [ycor < car-traffic-light-ypos and ycor > y]
+  let car-on-road?  any? cars with [ycor < car-traffic-light-ypos and ycor > y]
   
   ;; cautious: only move if
   ;; 1. we are on or across the road or 
@@ -245,7 +249,7 @@ to-report cautious-should-move? [ movement ]
      report true 
   ]
   ;; case 3
-  if not pedestrian-traffic-light-red? and not car-approaching?
+  if not pedestrian-traffic-light-red? and not car-on-road?
   [
      report true  
   ]
