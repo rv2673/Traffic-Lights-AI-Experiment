@@ -179,14 +179,14 @@ end
 ; UPDATE
 to go
   ; Update the people
-  ask-concurrent people [ move-person ]
+  ask people [ move-person ]
   
   ; Cooldown the people
-  ask-concurrent (people with [cooldown > 0]) 
+  ask (people with [cooldown > 0]) 
   [ set cooldown cooldown - 1 ]
   
   ; Update the cars
-  ask-concurrent cars [ move-car pen-down ]
+  ask cars [ move-car pen-down ]
   
   ; Update the world
   update-world
@@ -230,7 +230,7 @@ end
 to update-adaptive-persons
   let percentage-red  number-of-red-walkers / number-of-people
   ;; some adaptive people saw enough people walk through red. Become reckless again!
-  ask-concurrent (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
+  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
   [
      set adaptive-gone-reckless true
   ]
@@ -350,7 +350,7 @@ to update-lights
     set number-of-red-walkers 0
     let percentage-red  number-of-red-walkers / number-of-people  
   ;; some adaptive people didn't see enough people walk through red. Become cautious again!
-  ask-concurrent (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
+  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
   [
      set adaptive-gone-reckless false
   ]
