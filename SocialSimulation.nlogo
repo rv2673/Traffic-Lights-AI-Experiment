@@ -1,57 +1,78 @@
 globals [
+  ; Police and fine variables
   ;prob-police-appearance      ;; in promille, so [0,1000]
-  prob-police-enforcement     ;; in %, so [0,100] OR 100/2*jaywalkers
+  prob-police-enforcement      ;; in %, so [0,100] OR 100/2*jaywalkers
   
+  ; Car and pedestrian quantities
   ;number-of-people
   ;number-of-cars
   
+  ; Traffic light for the cars
   car-traffic-light-red?
   car-traffic-light-xpos
   car-traffic-light-ypos
   
+  ; Traffic light for the pedestrians
   pedestrian-traffic-light-red?
   pedestrian-traffic-light-xpos
   pedestrian-traffic-light-ypos
-  
+
   pedestrian-viewing-range            ;; in patches, world is 32x32 patches.
-    
+  
+  ; The road
   road-start-xpos
   road-end-xpos
   
+  ; The tick number when the car or pedestrian traffic light should go green respectively red
   tick-car-green
   tick-car-red
   tick-pedestrian-green
   tick-pedestrian-red
   
+  ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
+  ; Resets when the pedestrian traffic light goes green
   number-of-red-walkers 
   
+  ; Counters for the number of times a red light appeared and the total amount of red light walkers during the simulation
   total-number-of-red-lights
   total-number-of-red-light-walkers
 ]
 
+; Person model
 breed [people person]
-breed [cars car]
-
 people-own [
   walker-type   ;; "cautious", "adaptive", "reckless"
   walked-through-red? 
   own-profit
+  
+  ; Adaptive type specific properties
   adaptive-threshold-time-gained
   adaptive-threshold-time-gained-people-crossing
   adaptive-gone-reckless
+  
+  ; Adaptive and reckless specific properties
   cooldown
 ]
 
+; Car model
+breed [cars car]
 cars-own [
   
 ]
 
-to setup  
+
+;; SETUP
+to setup
+  ; Clear the entire simulation
   clear-all
   setup-globals
-  ask patches [ setup-road ]
+  
+  ; Generate a starting situation
+  setup-road
   setup-people
   setup-cars
+  
+  ; Reset the simulation ticks
   reset-ticks
 end
 
@@ -80,21 +101,24 @@ to setup-globals
   set tick-pedestrian-red tick-pedestrian-green + pedestrian-green-time
     
   set number-of-red-walkers 0
-  set   total-number-of-red-lights 0
-  set  total-number-of-red-light-walkers 0
+  set total-number-of-red-lights 0
+  set total-number-of-red-light-walkers 0
+  
+  ; Set the starting color of the traffic lights
   color-traffic-light-car
   color-traffic-light-pedestrian 
 end
 
+; Colors the car traffic light during setup
 to color-traffic-light-car
   ask patch car-traffic-light-xpos car-traffic-light-ypos [ 
     ifelse car-traffic-light-red?
      [ set pcolor red ]
      [ set pcolor green ]
   ]
-  
 end  
 
+; Colors the pedestrian traffic light during setup
 to color-traffic-light-pedestrian
   ask patch pedestrian-traffic-light-xpos pedestrian-traffic-light-ypos [ 
     ifelse pedestrian-traffic-light-red?
@@ -103,10 +127,14 @@ to color-traffic-light-pedestrian
   ]
 end
 
+; Colors the patches corresponding to the road
 to setup-road
-    if (pxcor < road-end-xpos) and (pxcor > road-start-xpos) [ set pcolor white ]
+    ask patches [ 
+      if (pxcor < road-end-xpos) and (pxcor > road-start-xpos) [ set pcolor white ]
+    ]
 end
 
+; Create the people during setup 
 to setup-people  
   create-people number-of-people [
     ;; leave some space free at the top
@@ -114,6 +142,7 @@ to setup-people
     setxy (random (max-pxcor) * -1 ) ycoordinate   ;; start on the left side
     set shape "person"
     set heading 90 
+    
     ;; 20% cautions, 60 % adaptive, 20% reckless
     let prob  random 100  
     ifelse prob <= 20
@@ -121,19 +150,13 @@ to setup-people
       [ifelse prob <= 80
         [set walker-type "adaptive" set adaptive-threshold-time-gained (random 25) + 1 set adaptive-threshold-time-gained-people-crossing (random-float 0.5) + 0.15 set adaptive-gone-reckless false ]
         [set walker-type "reckless"]] 
+    
     assign-color
     set cooldown 0
   ]
 end
 
-to setup-cars
-  create-cars number-of-cars [
-   setxy ((random 3) + 1) random-ycor
-   set shape "car"
-   set heading 180
-  ]
-end
-
+; Color a pedestrian according to its type during setup
 to assign-color ;; turtle procedure
   ifelse walker-type = "cautious"
      [ set color green ]
@@ -142,20 +165,38 @@ to assign-color ;; turtle procedure
        [ set color red] ]
 end  
 
+; Create the cars during setup
+to setup-cars
+  create-cars number-of-cars [
+   setxy ((random 3) + 1) random-ycor
+   set shape "car"
+   set heading 180
+  ]
+end
+;; END OF SETUP PROCEDURES
+
+
+; UPDATE
 to go
+  ; Update the people
   ask-concurrent people [ move-person ]
-   ask-concurrent (people with [cooldown > 0]) 
-    [
-      set cooldown cooldown - 1
-    ]
+  
+  ; Cooldown the people
+  ask-concurrent (people with [cooldown > 0]) 
+  [ set cooldown cooldown - 1 ]
+  
+  ; Update the cars
   ask-concurrent cars [ move-car pen-down ]
+  
+  ; Update the world
   update-world
   tick
 end
  
+; Update method for people
 to move-person
+  ; Randomize the movement speed a bit
   let movement (random 2 + 1)
-  ;let movement (random 2 + 1) ;; movement speed is a bit random
 
   if should-move? movement
   [
@@ -193,7 +234,6 @@ to update-adaptive-persons
   [
      set adaptive-gone-reckless true
   ]
- 
 end
 
 to-report car-in-range? [ ycar yped ]
@@ -349,6 +389,7 @@ to update-cops
     ]
   ]
 end
+;; END OF UPDATE PROCEDURES
 @#$#@#$#@
 GRAPHICS-WINDOW
 190
@@ -970,7 +1011,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
