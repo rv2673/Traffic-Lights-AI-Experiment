@@ -17,7 +17,7 @@ globals [
   pedestrian-traffic-light-xpos
   pedestrian-traffic-light-ypos
 
-  pedestrian-viewing-range            ;; in patches, world is 32x32 patches.
+  pedestrian-viewing-range            ;; in patches, world is 33x33 patches.
   
   ; The road
   road-start-xpos
@@ -248,25 +248,27 @@ to move-person
     let moved-onto-road? xcor <= pedestrian-traffic-light-xpos and xcor + movement > pedestrian-traffic-light-xpos
     if pedestrian-traffic-light-red? and moved-onto-road?
     [
-     set  walked-through-red? true
+      set  walked-through-red? true
     ]
     
     ;; made it across the road without being spotted
     if (xcor > road-end-xpos or xcor + movement > road-end-xpos) and walked-through-red? = true
     [
-     set walked-through-red? false 
-     let profit-gained (tick-pedestrian-green + 5 - ticks) * 0.1
-     if profit-gained < 0 
-     [
-       set profit-gained 0
-     ]
-     set own-profit  own-profit + (profit-gained)
-     set number-of-red-walkers number-of-red-walkers + 1 
-     if walker-type = "adaptive"
-     [set total-number-of-red-light-walkers total-number-of-red-light-walkers + 1 ]
-     update-adaptive-persons
+      set walked-through-red? false 
+      let profit-gained (tick-pedestrian-green + 5 - ticks) * 0.1
+      if profit-gained < 0 
+      [
+        set profit-gained 0
+      ]
+      set own-profit  own-profit + (profit-gained)
+      set number-of-red-walkers number-of-red-walkers + 1 
+      if walker-type = "adaptive"
+      [
+        set total-number-of-red-light-walkers total-number-of-red-light-walkers + 1 
+      ]
+      update-adaptive-persons
     ]
-   
+    
     fd movement
   ]
 end
@@ -276,7 +278,7 @@ to update-adaptive-persons
   ;; some adaptive people saw enough people walk through red. Become reckless again!
   ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
   [
-     set adaptive-gone-reckless true
+    set adaptive-gone-reckless true
   ]
 end
 
@@ -322,7 +324,6 @@ to-report should-move? [ movement ]
       report cautious-should-move? movement or (not car-approaching? and cooldown = 0)
     ]
   ]
-   
 end  
 
 to-report cautious-should-move? [ movement ]
@@ -337,27 +338,27 @@ to-report cautious-should-move? [ movement ]
   ;; case 1
   if on-or-across-road?
   [
-     report true
+    report true
   ]
   ;; case 2
   if ceiling(xcor + movement) <= road-start-xpos
   [
-     report true 
+    report true 
   ]
   ;; case 3
   if not pedestrian-traffic-light-red? and not car-on-road?
   [
-     report true  
+    report true  
   ]
   
   report false
 end
 
 to move-car
-   let movement (random 4 + 1)
-   let no-return ycor < car-traffic-light-ypos
-   if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
-     fd movement 
+  let movement (random 4 + 1)
+  let no-return ycor < car-traffic-light-ypos
+  if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
+    fd movement 
   ]
 end
 
@@ -375,14 +376,14 @@ to update-lights
   [
     set car-traffic-light-red? false
     color-traffic-light-car
-   
+    
     set tick-car-red ticks + car-green-time
     set tick-pedestrian-green ticks + ceiling (car-green-time * 1.2)
     set tick-pedestrian-red tick-pedestrian-green + pedestrian-green-time
     
     set tick-car-green tick-pedestrian-red + ceiling (pedestrian-green-time * 0.2)
   ]
-
+  
   if ticks = tick-car-red
   [
     set car-traffic-light-red? true
@@ -393,11 +394,11 @@ to update-lights
     set pedestrian-traffic-light-red? false
     set number-of-red-walkers 0
     let percentage-red  number-of-red-walkers / number-of-people  
-  ;; some adaptive people didn't see enough people walk through red. Become cautious again!
-  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
-  [
-     set adaptive-gone-reckless false
-  ]
+    ;; some adaptive people didn't see enough people walk through red. Become cautious again!
+    ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
+    [
+      set adaptive-gone-reckless false
+    ]
     
     color-traffic-light-pedestrian  
   ]
@@ -417,7 +418,6 @@ to update-cops
     ;; deliquents are people who walked through the red light
     let deliquents (people with [walked-through-red? = true])
     
-    
     ;show deliquents
     ;show ticks
     ask deliquents 
@@ -427,7 +427,6 @@ to update-cops
       if walker-type = "adaptive"
       [
         set adaptive-gone-reckless false
-        
       ]
       set cooldown fine ;; everyone gets a cooldown
     ]
