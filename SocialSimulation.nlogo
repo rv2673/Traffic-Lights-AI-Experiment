@@ -36,6 +36,11 @@ globals [
   ; Counters for the number of times a red light appeared and the total amount of red light walkers during the simulation
   total-number-of-red-lights
   total-number-of-red-light-walkers
+  
+  ; Waiting zone
+  ;waiting-zone?
+  waiting-time-base
+  waiting-time-diff
 ]
 
 ; Person model
@@ -44,6 +49,8 @@ people-own [
   walker-type   ;; "cautious", "adaptive", "reckless"
   walked-through-red? 
   own-profit
+  ; The number of ticks a person waits before approaching the road 
+  wait-time
   
   ; Adaptive type specific properties
   adaptive-threshold-time-gained
@@ -68,7 +75,7 @@ to setup
   setup-globals
   
   ; Generate a starting situation
-  setup-road
+  setup-world
   setup-people
   setup-cars
   
@@ -104,6 +111,10 @@ to setup-globals
   set total-number-of-red-lights 0
   set total-number-of-red-light-walkers 0
   
+  ;set waiting-zone? true
+  set waiting-time-base 2
+  set waiting-time-diff 8
+  
   ; Set the starting color of the traffic lights
   color-traffic-light-car
   color-traffic-light-pedestrian 
@@ -127,11 +138,20 @@ to color-traffic-light-pedestrian
   ]
 end
 
-; Colors the patches corresponding to the road
-to setup-road
-    ask patches [ 
-      if (pxcor < road-end-xpos) and (pxcor > road-start-xpos) [ set pcolor white ]
+; Colors the patches corresponding to the waiting zone and the road
+to setup-world
+  ; Color the waiting area
+  if waiting-zone
+  [
+    ask patches [
+      if (pxcor = min-pxcor) [ set pcolor blue ]
     ]
+  ]
+  
+  ; Color the road
+  ask patches [ 
+    if (pxcor < road-end-xpos) and (pxcor > road-start-xpos) [ set pcolor white ]
+  ]
 end
 
 ; Create the people during setup 
@@ -179,12 +199,8 @@ end
 ; UPDATE
 to go
   ; Update the people
-  ask people [ move-person ]
-  
-  ; Cooldown the people
-  ask (people with [cooldown > 0]) 
-  [ set cooldown cooldown - 1 ]
-  
+  ask people [ update-person ]
+ 
   ; Update the cars
   ask cars [ move-car pen-down ]
   
@@ -194,6 +210,34 @@ to go
 end
  
 ; Update method for people
+to update-person
+  ; Reduce the cooldown
+  if cooldown > 0
+  [
+    set cooldown cooldown - 1
+  ]
+  
+  ; Check if the person is waiting, if so reduce the wait-time
+  ifelse wait-time > 0
+  [
+    set wait-time wait-time - 1
+  ]
+  [
+    ; Move the person and check if the person wrapped around.
+    let xcor-before xcor
+    move-person
+    
+    if xcor < xcor-before and waiting-zone
+    [
+      ; Determine a slightly random wait time.
+      set wait-time (waiting-time-base + random waiting-time-diff)
+      ; Place the person on the blue waiting zone.
+      setxy min-pxcor ycor
+    ]
+  ]
+end
+
+; Handle the movement of a person
 to move-person
   ; Randomize the movement speed a bit
   let movement (random 2 + 1)
@@ -644,7 +688,7 @@ fine
 fine
 1
 500
-251
+241
 10
 1
 NIL
@@ -667,6 +711,17 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot ((total-number-of-red-light-walkers) / (total-number-of-red-lights + 1)) / number-of-people"
+
+SWITCH
+5
+260
+185
+293
+waiting-zone
+waiting-zone
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
