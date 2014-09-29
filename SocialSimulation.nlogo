@@ -31,11 +31,11 @@ globals [
   
   ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
   ; Resets when the pedestrian traffic light goes green
-  number-of-red-walkers 
+  stat-red-walking 
   
   ; Counters for the number of times a red light appeared and the total amount of red light walkers during the simulation
-  total-number-of-red-lights
-  total-number-of-red-light-walkers
+  stat-total-red-lights
+  stat-total-red-walking
   
   ; Waiting zone
   ;waiting-zone?
@@ -107,9 +107,9 @@ to setup-globals
   set tick-pedestrian-green ceiling (car-green-time * 1.2)
   set tick-pedestrian-red tick-pedestrian-green + pedestrian-green-time
     
-  set number-of-red-walkers 0
-  set total-number-of-red-lights 0
-  set total-number-of-red-light-walkers 0
+  set stat-red-walking 0
+  set stat-total-red-lights 0
+  set stat-total-red-walking 0
   
   ;set waiting-zone? true
   set waiting-time-base 2
@@ -263,10 +263,10 @@ to move-person
         set profit-gained 0
       ]
       set own-profit  own-profit + (profit-gained)
-      set number-of-red-walkers number-of-red-walkers + 1 
+      set stat-red-walking stat-red-walking + 1 
       if walker-type = "adaptive"
       [
-        set total-number-of-red-light-walkers total-number-of-red-light-walkers + 1 
+        set stat-total-red-walking stat-total-red-walking + 1 
       ]
       update-adaptive-persons
     ]
@@ -276,7 +276,7 @@ to move-person
 end
 
 to update-adaptive-persons
-  let percentage-red  number-of-red-walkers / number-of-people
+  let percentage-red  stat-red-walking / number-of-people
   ;; some adaptive people saw enough people walk through red. Become reckless again!
   ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
   [
@@ -394,8 +394,8 @@ to update-lights
   if ticks = tick-pedestrian-green
   [
     set pedestrian-traffic-light-red? false
-    set number-of-red-walkers 0
-    let percentage-red  number-of-red-walkers / number-of-people  
+    set stat-red-walking 0
+    let percentage-red  stat-red-walking / number-of-people  
     ;; some adaptive people didn't see enough people walk through red. Become cautious again!
     ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
     [
@@ -407,7 +407,7 @@ to update-lights
   if ticks = tick-pedestrian-red
   [
     set pedestrian-traffic-light-red? true
-    set total-number-of-red-lights total-number-of-red-lights + 1
+    set stat-total-red-lights stat-total-red-lights + 1
     color-traffic-light-pedestrian  
   ]
 end
@@ -642,7 +642,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot number-of-red-walkers / number-of-people"
+"default" 1.0 0 -16777216 true "" "plot stat-red-walking / number-of-people"
 
 PLOT
 830
@@ -711,7 +711,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot ((total-number-of-red-light-walkers) / (total-number-of-red-lights + 1)) / number-of-people"
+"default" 1.0 0 -16777216 true "" "plot ((stat-total-red-walking) / (stat-total-red-lights + 1)) / number-of-people"
 
 SWITCH
 5
