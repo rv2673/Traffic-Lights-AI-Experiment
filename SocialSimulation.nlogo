@@ -1,7 +1,7 @@
 globals [
   ; Police and fine variables
-  ;prob-police-appearance      ;; in promille, so [0,1000]
-  prob-police-enforcement      ;; in %, so [0,100] OR 100/2*jaywalkers
+  ;prob-police-appearance             ;; in promille, so [0,1000]
+  prob-police-enforcement             ;; in %, so [0,100] OR 100/2*jaywalkers
   
   ; Car and pedestrian quantities
   ;number-of-people
@@ -16,8 +16,13 @@ globals [
   pedestrian-traffic-light-red?
   pedestrian-traffic-light-xpos
   pedestrian-traffic-light-ypos
-
+  
   pedestrian-viewing-range            ;; in patches, world is 33x33 patches.
+  
+  ; Waiting zone
+  ;waiting-zone?
+  waiting-time-base
+  waiting-time-diff
   
   ; The road
   road-start-xpos
@@ -29,6 +34,16 @@ globals [
   tick-pedestrian-green
   tick-pedestrian-red
   
+  ;; STATISTICS
+  ;; Statistics are based on the number of people approaching/crossing the road during one traffic light cycle.
+  ;; In case of red light walkers who wrap around the world and approach the road multiple times they will be counted accordingly.
+  ;; A cycle starts as soon as the pedestrian traffic light goes red.
+  stat-cycles
+  
+  ; Counter of the number of pedestrians approaching the road during a cycle.
+  ; Note: these don't have to be unique pedestrians since one person can be counted multiple times.
+  stat-pedestrians
+  
   ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
   ; Resets when the pedestrian traffic light goes green
   stat-red-walking 
@@ -36,11 +51,6 @@ globals [
   ; Counters for the number of times a red light appeared and the total amount of red light walkers during the simulation
   stat-total-red-lights
   stat-total-red-walking
-  
-  ; Waiting zone
-  ;waiting-zone?
-  waiting-time-base
-  waiting-time-diff
 ]
 
 ; Person model
@@ -93,11 +103,16 @@ to setup-globals
   set car-traffic-light-red? false
   set car-traffic-light-xpos 4
   set car-traffic-light-ypos (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor
+  
   set pedestrian-traffic-light-red? true
   set pedestrian-traffic-light-xpos 0
   set pedestrian-traffic-light-ypos 0
   
   set pedestrian-viewing-range 8
+  
+  ;set waiting-zone? true
+  set waiting-time-base 2
+  set waiting-time-diff 8
   
   set road-start-xpos 0
   set road-end-xpos  4
@@ -106,14 +121,12 @@ to setup-globals
   set tick-car-red tick-car-green + car-green-time
   set tick-pedestrian-green ceiling (car-green-time * 1.2)
   set tick-pedestrian-red tick-pedestrian-green + pedestrian-green-time
-    
+  
+  set stat-cycles 0
+  set stat-pedestrians 0
   set stat-red-walking 0
   set stat-total-red-lights 0
   set stat-total-red-walking 0
-  
-  ;set waiting-zone? true
-  set waiting-time-base 2
-  set waiting-time-diff 8
   
   ; Set the starting color of the traffic lights
   color-traffic-light-car
@@ -143,9 +156,8 @@ to setup-world
   ; Color the waiting area
   if waiting-zone
   [
-    ask patches [
-      if (pxcor = min-pxcor) [ set pcolor blue ]
-    ]
+    ask patches with [ pxcor = min-pxcor ] ; Patches on the far left side of the world
+    [ set pcolor blue ]
   ]
   
   ; Color the road
@@ -157,9 +169,12 @@ end
 ; Create the people during setup 
 to setup-people  
   create-people number-of-people [
-    ;; leave some space free at the top
+    ; Place the people on the left side of the road, but keep space for them to be counted in the current cycle.
+    let xcoordinate (random (max-pxcor - 3) * -1) - 3
+    ; Leave some space free at the top
     let ycoordinate (random-float (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor)
-    setxy (random (max-pxcor) * -1 ) ycoordinate   ;; start on the left side
+    
+    setxy xcoordinate ycoordinate
     set shape "person"
     set heading 90 
     
@@ -227,10 +242,19 @@ to update-person
     let xcor-before xcor
     move-person
     
+    ; Check for pedestrians approaching the road.
+    if xcor < road-start-xpos and abs(xcor-before - road-start-xpos) > 2 and abs(xcor - road-start-xpos) <= 2
+    [ 
+      ; Count the pedestrian towards the number of pedestrians crossing.
+      set stat-pedestrians stat-pedestrians + 1
+    ]
+    
+    ; Check for pedestrians wrapping around.
     if xcor < xcor-before and waiting-zone
     [
       ; Determine a slightly random wait time.
       set wait-time (waiting-time-base + random waiting-time-diff)
+      
       ; Place the person on the blue waiting zone.
       ; Note: the y coordinate is randomized to reduce bias due to optimum crossing heights
       let ycoordinate (random-float (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor) ; Should be the same as in setup-people
@@ -394,21 +418,27 @@ to update-lights
   if ticks = tick-pedestrian-green
   [
     set pedestrian-traffic-light-red? false
-    set stat-red-walking 0
-    let percentage-red  stat-red-walking / number-of-people  
+    ; TODO: Re-implement not seeing enough red walkers (??)
+    ;let percentage-red  stat-red-walking / number-of-people  
     ;; some adaptive people didn't see enough people walk through red. Become cautious again!
-    ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
-    [
-      set adaptive-gone-reckless false
-    ]
+    ;ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
+    ;[
+    ;  set adaptive-gone-reckless false
+    ;]
     
     color-traffic-light-pedestrian  
   ]
   if ticks = tick-pedestrian-red
   [
+    ; Set the pedestrian traffic-light red.
     set pedestrian-traffic-light-red? true
+    color-traffic-light-pedestrian
+
+    ; Start a new cycle.
+    stat-start-cycle
+        
+    ; Update the total number of red-lights stat
     set stat-total-red-lights stat-total-red-lights + 1
-    color-traffic-light-pedestrian  
   ]
 end
 
@@ -435,6 +465,18 @@ to update-cops
   ]
 end
 ;; END OF UPDATE PROCEDURES
+
+
+;; STATISTIC
+to stat-start-cycle
+  ; Increase the cycle counter.
+  set stat-cycles stat-cycles + 1
+  
+  set stat-pedestrians 0
+  set stat-red-walking 0
+end
+
+;; END OF STATISTIC PROCEDURES
 @#$#@#$#@
 GRAPHICS-WINDOW
 190
@@ -534,7 +576,7 @@ SLIDER
 153
 number-of-people
 number-of-people
-10
+1
 100
 20
 1
@@ -723,6 +765,46 @@ waiting-zone
 0
 1
 -1000
+
+PLOT
+1345
+10
+1660
+255
+Red light walkers %
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "ifelse stat-pedestrians > 0 [plot stat-red-walking / stat-pedestrians][plot 0]"
+
+MONITOR
+1345
+260
+1497
+305
+Pedestrians crossing
+stat-pedestrians
+1
+1
+11
+
+MONITOR
+1505
+260
+1660
+305
+Red walkers
+stat-red-walking
+1
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
