@@ -232,7 +232,9 @@ to update-person
       ; Determine a slightly random wait time.
       set wait-time (waiting-time-base + random waiting-time-diff)
       ; Place the person on the blue waiting zone.
-      setxy min-pxcor ycor
+      ; Note: the y coordinate is randomized to reduce bias due to optimum crossing heights
+      let ycoordinate (random-float (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor) ; Should be the same as in setup-people
+      setxy min-pxcor ycoordinate
     ]
   ]
 end
