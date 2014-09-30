@@ -513,6 +513,40 @@ to stat-count-pedestrian [pedestrian]
   ]
 end
 
+to-report stat-percentage [walkertype total?]
+  ; Check if the divider is zero.
+  ifelse total?
+  [ if stat-total-pedestrians = 0 [report 0] ]
+  [ if stat-pedestrians = 0 [report 0] ]
+  
+  ifelse walkertype = "cautious"
+  [ report stat-cautious-percentage total? ]
+  [ ifelse walkertype = "adaptive"
+    [ report stat-adaptive-percentage total? ]
+    [ report stat-reckless-percentage total? ] ]
+end
+
+; DO NOT call directly, use stat-percentage instead
+to-report stat-cautious-percentage [total?]
+  ifelse total?
+  [ report stat-total-cautious / stat-total-pedestrians ]
+  [ report stat-cautious / stat-pedestrians ]
+end
+
+; DO NOT call directly, use stat-percentage instead
+to-report stat-adaptive-percentage [total?]
+  ifelse total?
+  [ report stat-total-adaptive / stat-total-pedestrians ]
+  [ report stat-adaptive / stat-pedestrians ]
+end
+
+; DO NOT call directly, use stat-percentage instead
+to-report stat-reckless-percentage [total?]
+  ifelse total?
+  [ report stat-total-reckless / stat-total-pedestrians ]
+  [ report stat-reckless / stat-pedestrians  ]
+end
+
 
 ;; END OF STATISTIC PROCEDURES
 @#$#@#$#@
@@ -860,9 +894,9 @@ true
 false
 "" ""
 PENS
-"cautious" 1.0 0 -10899396 true "" "ifelse stat-pedestrians > 0 [plot stat-cautious / stat-pedestrians][plot 0]"
-"adaptive" 1.0 0 -1184463 true "" "ifelse stat-pedestrians > 0 [plot stat-adaptive / stat-pedestrians][plot 0]"
-"reckless" 1.0 0 -2674135 true "" "ifelse stat-pedestrians > 0 [plot stat-reckless / stat-pedestrians][plot 0]"
+"cautious" 1.0 0 -10899396 true "" "plot stat-percentage \"cautious\" false"
+"adaptive" 1.0 0 -1184463 true "" "plot stat-percentage \"adaptive\" false"
+"reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" false"
 
 PLOT
 1505
@@ -880,9 +914,9 @@ true
 false
 "" ""
 PENS
-"cautious" 1.0 0 -10899396 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-cautious / stat-total-pedestrians][plot 0]"
-"adaptive" 1.0 0 -1184463 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-adaptive / stat-total-pedestrians][plot 0]"
-"reckless" 1.0 0 -2674135 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-reckless / stat-total-pedestrians][plot 0]"
+"cautious" 1.0 0 -10899396 true "" "plot stat-percentage \"cautious\" true"
+"adaptive" 1.0 0 -1184463 true "" "plot stat-percentage \"adaptive\" true"
+"reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" true"
 
 @#$#@#$#@
 ## WHAT IS IT?
