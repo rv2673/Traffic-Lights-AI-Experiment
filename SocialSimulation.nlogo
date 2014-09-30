@@ -47,6 +47,12 @@ globals [
   stat-adaptive
   stat-reckless
   
+  ; The total counter parts of the stat globals above.
+  stat-total-pedestrians
+  stat-total-cautious
+  stat-total-adaptive
+  stat-total-reckless
+  
   ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
   ; Resets when the pedestrian traffic light goes green
   stat-red-walking 
@@ -130,6 +136,10 @@ to setup-globals
   set stat-cautious 0
   set stat-adaptive 0
   set stat-reckless 0
+  set stat-total-pedestrians 0
+  set stat-total-cautious 0
+  set stat-total-adaptive 0
+  set stat-total-reckless 0
   set stat-red-walking 0
   set stat-total-red-lights 0
   set stat-total-red-walking 0
@@ -251,13 +261,8 @@ to update-person
     ; Check for pedestrians approaching the road.
     if xcor < road-start-xpos and abs(xcor-before - road-start-xpos) > 2 and abs(xcor - road-start-xpos) <= 2
     [ 
-      ; Count the pedestrian towards the number of pedestrians crossing.
-      set stat-pedestrians stat-pedestrians + 1
-      ifelse walker-type = "cautious"
-      [ set stat-cautious stat-cautious + 1]
-      [ ifelse walker-type = "adaptive"
-        [ set stat-adaptive stat-adaptive + 1]
-        [ set stat-reckless stat-reckless + 1]]
+      ; Count the pedestrian towards the various stat variables
+      stat-count-pedestrian self
     ]
     
     ; Check for pedestrians wrapping around.
@@ -490,6 +495,24 @@ to stat-start-cycle
   
   set stat-red-walking 0
 end
+
+; Method for counting a pedestrian.
+to stat-count-pedestrian [pedestrian]
+  set stat-pedestrians stat-pedestrians + 1
+  set stat-total-pedestrians stat-total-pedestrians + 1
+  
+  ask pedestrian [
+    ifelse walker-type = "cautious"
+    [ set stat-cautious stat-cautious + 1
+      set stat-total-cautious stat-total-cautious + 1 ]
+    [ ifelse walker-type = "adaptive"
+      [ set stat-adaptive stat-adaptive + 1
+        set stat-total-adaptive stat-total-adaptive + 1 ]
+      [ set stat-reckless stat-reckless + 1
+        set stat-total-reckless stat-total-reckless + 1 ]]
+  ]
+end
+
 
 ;; END OF STATISTIC PROCEDURES
 @#$#@#$#@
@@ -822,9 +845,9 @@ stat-red-walking
 11
 
 PLOT
-1345
+1295
 310
-1545
+1495
 460
 Walker type %
 NIL
@@ -840,6 +863,26 @@ PENS
 "cautious" 1.0 0 -10899396 true "" "ifelse stat-pedestrians > 0 [plot stat-cautious / stat-pedestrians][plot 0]"
 "adaptive" 1.0 0 -1184463 true "" "ifelse stat-pedestrians > 0 [plot stat-adaptive / stat-pedestrians][plot 0]"
 "reckless" 1.0 0 -2674135 true "" "ifelse stat-pedestrians > 0 [plot stat-reckless / stat-pedestrians][plot 0]"
+
+PLOT
+1505
+310
+1705
+460
+Total walker type %
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"cautious" 1.0 0 -10899396 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-cautious / stat-total-pedestrians][plot 0]"
+"adaptive" 1.0 0 -1184463 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-adaptive / stat-total-pedestrians][plot 0]"
+"reckless" 1.0 0 -2674135 true "" "ifelse stat-total-pedestrians > 0 [plot stat-total-reckless / stat-total-pedestrians][plot 0]"
 
 @#$#@#$#@
 ## WHAT IS IT?
