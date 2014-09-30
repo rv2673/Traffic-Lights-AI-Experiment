@@ -405,9 +405,9 @@ to move-car
   let movement (random 4 + 1)
   
   ; -- OLD CODE
-  ;
+  ; let no-return ycor < car-traffic-light-ypos
+  ; if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
   ; --
-  
   if not car-traffic-light-red? or round (ycor + movement) <= round car-traffic-light-ypos [ 
     fd movement 
   ]
@@ -419,15 +419,14 @@ to update-world
 end  
 
 to update-lights
-  ;; we never want two green lights at the same time, 
-  ;; but we do want that the red lights are on 1/5th of the green time
-  ;; this prevents collisions.
-  ;; car-light goes red: 1/5th of green time later pedestrian light goes green
+  ; Instead of perfectly switching green from the car-light to the pedestrian-light both are temporarily red.
+  ; So when the car-light goes red: 1/5th of green time later pedestrian light goes green
   if ticks = tick-car-green
   [
     set car-traffic-light-red? false
     color-traffic-light-car
     
+    ; Update the red/green times of the traffic lights.
     set tick-car-red ticks + car-green-time
     set tick-pedestrian-green ticks + ceiling (car-green-time * 1.2)
     set tick-pedestrian-red tick-pedestrian-green + pedestrian-green-time
@@ -435,29 +434,37 @@ to update-lights
     set tick-car-green tick-pedestrian-red + ceiling (pedestrian-green-time * 0.2)
   ]
   
+  ; Car light goes red
   if ticks = tick-car-red
   [
     set car-traffic-light-red? true
     color-traffic-light-car  
   ]
+  
+  ; Pedestrian light goes green
   if ticks = tick-pedestrian-green
   [
     set pedestrian-traffic-light-red? false
-    ; TODO: Re-implement not seeing enough red walkers (??)
-    ;let percentage-red  stat-red-walking / number-of-people  
-    ;; some adaptive people didn't see enough people walk through red. Become cautious again!
-    ;ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = true and percentage-red < adaptive-threshold-time-gained-people-crossing]) 
-    ;[
-    ;  set adaptive-gone-reckless false
-    ;]
-    
     color-traffic-light-pedestrian  
   ]
+  
+  ; Pedestrian light goes red
   if ticks = tick-pedestrian-red
   [
     ; Set the pedestrian traffic-light red.
     set pedestrian-traffic-light-red? true
     color-traffic-light-pedestrian
+
+    ; End of cycle, adjust adaptive people that didn't see enough reckless behaviour to stay reckless themselves.
+    let percentage-red-walking stat-red-walking / stat-pedestrians
+    ask people with [walker-type = "adaptive"]
+    [
+      if adaptive-gone-reckless = true and percentage-red-walking < adaptive-threshold-time-gained-people-crossing
+      [
+        show adaptive-threshold-time-gained-people-crossing
+        set adaptive-gone-reckless false
+      ]
+    ]
 
     ; Start a new cycle.
     stat-start-cycle
@@ -468,6 +475,7 @@ to update-lights
 end
 
 to update-cops
+  ;; TODO: Implement better/new fine system with experiencing, seeing and hearing.
   let prob 1 + random 100 
   let prob2 1 + random 100
   if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
