@@ -56,10 +56,12 @@ globals [
   ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
   ; Resets when the pedestrian traffic light goes green
   stat-red-walking 
+  stat-adaptive-red-walking
   
   ; Counters for the number of times a red light appeared and the total amount of red light walkers during the simulation
   stat-total-red-lights
   stat-total-red-walking
+  stat-total-adaptive-red-walking
 ]
 
 ; Person model
@@ -138,8 +140,10 @@ to setup-globals
   set stat-total-adaptive 0
   set stat-total-reckless 0
   set stat-red-walking 0
+  set stat-adaptive-red-walking 0
   set stat-total-red-lights 0
   set stat-total-red-walking 0
+  set stat-total-adaptive-red-walking 0
   
   ; Set the starting color of the traffic lights
   color-traffic-light-car
@@ -307,11 +311,10 @@ to move-person
         set profit-gained 0
       ]
       set own-profit  own-profit + (profit-gained)
-      set stat-red-walking stat-red-walking + 1 
-      if walker-type = "adaptive"
-      [
-        set stat-total-red-walking stat-total-red-walking + 1 
-      ]
+      
+      ; Count the pedestrian towards the red walkers.
+      stat-count-red-walker self
+
       update-adaptive-persons
     ]
     
@@ -374,7 +377,7 @@ end
 
 to-report cautious-should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
-  let y  ycor
+  let y ycor
   let car-on-road?  any? cars with [ycor < car-traffic-light-ypos and ycor > y]
   
   ;; cautious: only move if
@@ -408,7 +411,7 @@ to move-car
   ; let no-return ycor < car-traffic-light-ypos
   ; if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
   ; --
-  if not car-traffic-light-red? or round (ycor + movement) <= round car-traffic-light-ypos [ 
+  if not car-traffic-light-red? or ycor <= car-traffic-light-ypos [ 
     fd movement 
   ]
 end
@@ -509,6 +512,7 @@ to stat-start-cycle
   set stat-reckless 0
   
   set stat-red-walking 0
+  set stat-adaptive-red-walking 0
 end
 
 ; Method for counting a pedestrian.
@@ -528,6 +532,20 @@ to stat-count-pedestrian [pedestrian]
   ]
 end
 
+; Method for counting a red walker
+to stat-count-red-walker [pedestrian]
+  set stat-red-walking stat-red-walking + 1
+  set stat-total-red-walking stat-total-red-walking + 1
+  
+  ask pedestrian [
+    if walker-type = "adaptive"
+    [
+      set stat-adaptive-red-walking stat-adaptive-red-walking + 1
+      set stat-total-adaptive-red-walking stat-total-adaptive-red-walking + 1
+    ]
+  ]
+end
+
 to-report stat-percentage [walkertype total?]
   ; Check if the divider is zero.
   ifelse total?
@@ -540,6 +558,18 @@ to-report stat-percentage [walkertype total?]
     [ report stat-adaptive-percentage total? ]
     [ report stat-reckless-percentage total? ] ]
 end
+
+to-report stat-percentage-red-walking [total?]
+  ; Check if the divider is zero.
+  ifelse total?
+  [ if stat-total-pedestrians = 0 [report 0] ]
+  [ if stat-pedestrians = 0 [report 0] ]  
+  
+  ifelse total?
+  [ report stat-total-red-walking / stat-total-pedestrians ]
+  [ report stat-red-walking / stat-pedestrians ]
+end
+
 
 ; DO NOT call directly, use stat-percentage instead
 to-report stat-cautious-percentage [total?]
@@ -868,7 +898,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "ifelse stat-pedestrians > 0 [plot stat-red-walking / stat-pedestrians][plot 0]"
+"default" 1.0 0 -16777216 true "" "plot stat-percentage-red-walking false"
 
 MONITOR
 1345
