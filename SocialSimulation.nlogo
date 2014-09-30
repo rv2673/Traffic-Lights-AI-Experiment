@@ -323,7 +323,7 @@ to move-person
 end
 
 to update-adaptive-persons
-  let percentage-red  stat-red-walking / number-of-people
+  let percentage-red stat-percentage-red-walking false
   ;; some adaptive people saw enough people walk through red. Become reckless again!
   ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
   [
@@ -459,7 +459,7 @@ to update-lights
     color-traffic-light-pedestrian
 
     ; End of cycle, adjust adaptive people that didn't see enough reckless behaviour to stay reckless themselves.
-    let percentage-red-walking stat-red-walking / stat-pedestrians
+    let percentage-red-walking stat-percentage-red-walking false
     ask people with [walker-type = "adaptive"]
     [
       if adaptive-gone-reckless = true and percentage-red-walking < adaptive-threshold-time-gained-people-crossing
