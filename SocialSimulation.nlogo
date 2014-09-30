@@ -47,7 +47,7 @@ globals [
   stat-adaptive
   stat-reckless
   
-  ; The total counter parts of the stat globals above.
+  ; The total counterparts of the stat globals above.
   stat-total-pedestrians
   stat-total-cautious
   stat-total-adaptive
@@ -65,7 +65,7 @@ globals [
 ; Person model
 breed [people person]
 people-own [
-  walker-type   ;; "cautious", "adaptive", "reckless"
+  walker-type                         ;; "cautious", "adaptive", "reckless"
   walked-through-red? 
   own-profit
   ; The number of ticks a person waits before approaching the road 
@@ -82,9 +82,6 @@ people-own [
 
 ; Car model
 breed [cars car]
-cars-own [
-  
-]
 
 
 ;; SETUP
@@ -194,34 +191,41 @@ to setup-people
     set shape "person"
     set heading 90 
     
-    ;; 20% cautions, 60 % adaptive, 20% reckless
-    let prob  random 100  
+    ; 20% cautions, 60 % adaptive, 20% reckless
+    ; Note: these percentages are the ratio among the population NOT the pedestrians approaching the road,
+    ; since one person can cross the road multiple times.
+    let prob random 100  
     ifelse prob <= 20
       [ set walker-type "cautious" ] 
-      [ifelse prob <= 80
-        [set walker-type "adaptive" set adaptive-threshold-time-gained (random 25) + 1 set adaptive-threshold-time-gained-people-crossing (random-float 0.5) + 0.15 set adaptive-gone-reckless false ]
-        [set walker-type "reckless"]] 
+      [ ifelse prob <= 80
+        [ set walker-type "adaptive"
+          ; Adaptive people have additional variables
+          set adaptive-threshold-time-gained (random 25) + 1
+          set adaptive-threshold-time-gained-people-crossing (random-float 0.5) + 0.15
+          set adaptive-gone-reckless false ]
+        [ set walker-type "reckless" ]] 
     
-    assign-color
+    ; Assign a color to the person depending on its walker type.
+    ifelse walker-type = "cautious"
+      [ set color green ]
+      [ ifelse walker-type = "adaptive"
+        [ set color yellow]
+        [ set color red] ]
     set cooldown 0
   ]
 end
 
-; Color a pedestrian according to its type during setup
-to assign-color ;; turtle procedure
-  ifelse walker-type = "cautious"
-     [ set color green ]
-     [ ifelse walker-type = "adaptive"
-       [ set color yellow]
-       [ set color red] ]
-end  
-
 ; Create the cars during setup
 to setup-cars
   create-cars number-of-cars [
-   setxy ((random 3) + 1) random-ycor
-   set shape "car"
-   set heading 180
+    ; The road is only three patches wide [1, 3]
+    let xcoordinate ((random 3) + 1)
+    ; The car can be anywhere along the road.
+    let ycoordinate random-ycor
+    
+    setxy xcoordinate ycoordinate
+    set shape "car"
+    set heading 180
   ]
 end
 ;; END OF SETUP PROCEDURES
@@ -233,7 +237,7 @@ to go
   ask people [ update-person ]
  
   ; Update the cars
-  ask cars [ move-car pen-down ]
+  ask cars [ move-car ]
   
   ; Update the world
   update-world
@@ -397,9 +401,14 @@ to-report cautious-should-move? [ movement ]
 end
 
 to move-car
+  ; A car moves with a randomized speed.
   let movement (random 4 + 1)
-  let no-return ycor < car-traffic-light-ypos
-  if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
+  
+  ; -- OLD CODE
+  ;
+  ; --
+  
+  if not car-traffic-light-red? or round (ycor + movement) <= round car-traffic-light-ypos [ 
     fd movement 
   ]
 end
@@ -466,8 +475,6 @@ to update-cops
     ;; deliquents are people who walked through the red light
     let deliquents (people with [walked-through-red? = true])
     
-    ;show deliquents
-    ;show ticks
     ask deliquents 
     [
       set own-profit  own-profit - fine
@@ -546,7 +553,6 @@ to-report stat-reckless-percentage [total?]
   [ report stat-total-reckless / stat-total-pedestrians ]
   [ report stat-reckless / stat-pedestrians  ]
 end
-
 
 ;; END OF STATISTIC PROCEDURES
 @#$#@#$#@
