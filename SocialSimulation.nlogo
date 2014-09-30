@@ -43,6 +43,9 @@ globals [
   ; Counter of the number of pedestrians approaching the road during a cycle.
   ; Note: these don't have to be unique pedestrians since one person can be counted multiple times.
   stat-pedestrians
+  stat-cautious
+  stat-adaptive
+  stat-reckless
   
   ; Counter for the number of times a pedestrian walks through a red light during one traffic light cycle
   ; Resets when the pedestrian traffic light goes green
@@ -124,6 +127,9 @@ to setup-globals
   
   set stat-cycles 0
   set stat-pedestrians 0
+  set stat-cautious 0
+  set stat-adaptive 0
+  set stat-reckless 0
   set stat-red-walking 0
   set stat-total-red-lights 0
   set stat-total-red-walking 0
@@ -247,6 +253,11 @@ to update-person
     [ 
       ; Count the pedestrian towards the number of pedestrians crossing.
       set stat-pedestrians stat-pedestrians + 1
+      ifelse walker-type = "cautious"
+      [ set stat-cautious stat-cautious + 1]
+      [ ifelse walker-type = "adaptive"
+        [ set stat-adaptive stat-adaptive + 1]
+        [ set stat-reckless stat-reckless + 1]]
     ]
     
     ; Check for pedestrians wrapping around.
@@ -473,6 +484,10 @@ to stat-start-cycle
   set stat-cycles stat-cycles + 1
   
   set stat-pedestrians 0
+  set stat-cautious 0
+  set stat-adaptive 0
+  set stat-reckless 0
+  
   set stat-red-walking 0
 end
 
@@ -499,8 +514,8 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -805,6 +820,26 @@ stat-red-walking
 1
 1
 11
+
+PLOT
+1345
+310
+1545
+460
+Walker type %
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"cautious" 1.0 0 -10899396 true "" "ifelse stat-pedestrians > 0 [plot stat-cautious / stat-pedestrians][plot 0]"
+"adaptive" 1.0 0 -1184463 true "" "ifelse stat-pedestrians > 0 [plot stat-adaptive / stat-pedestrians][plot 0]"
+"reckless" 1.0 0 -2674135 true "" "ifelse stat-pedestrians > 0 [plot stat-reckless / stat-pedestrians][plot 0]"
 
 @#$#@#$#@
 ## WHAT IS IT?
