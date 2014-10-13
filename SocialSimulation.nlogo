@@ -545,18 +545,21 @@ to update-cops
       ]
     ]
     
-    ; Pick a few people at random for hearing the news.
-    ask people
+    ; Pick a few people at random for hearing the news (only if someone actually got caught).
+    if not (count deliquents = 0)
     [
-      let prob2 1 + random 100
-      if prob2 < caught-heard-chance and label = ""
+      ask people
       [
+        let prob2 1 + random 100
+        if prob2 < caught-heard-chance and label = ""
+        [
           set label "HEARD"
           set label-color blue
           
           ; Apply the fine to the cooldown.
           ; TODO: Don't use cooldown, but something else.
           set cooldown fine * caught-heard-weight
+        ]
       ]
     ]
   ]
@@ -847,7 +850,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-92
+100
 1
 1
 percent
