@@ -3,6 +3,18 @@ globals [
   ;prob-police-appearance             ;; in promille, so [0,1000]
   prob-police-enforcement             ;; in %, so [0,100] OR 100/2*jaywalkers
   
+  ; Experience variables, there are three ways to participate in someone getting caught:
+  ; (1) Experiencing: getting caught ourselves.
+  ; (2) Seeing: see someone getting caught.
+  ; (3) Hearing: someone telling you someone got caught.
+  caught-experienced-weight;
+  caught-saw-weight
+  caught-heard-weight
+  ; The radius around people caught that other people will see.
+  caught-saw-radius
+  ; The chance to hear the news on a per person basis.
+  caught-heard-chance
+  
   ; Car and pedestrian quantities
   ;number-of-people
   ;number-of-cars
@@ -104,6 +116,12 @@ end
 to setup-globals
   ;set prob-police-appearance 1
   set prob-police-enforcement 100 / (0.2 * number-of-people)
+  
+  set caught-experienced-weight 1.0
+  set caught-saw-weight 0.5
+  set caught-heard-weight 0.2
+  set caught-saw-radius 4
+  set caught-heard-chance 10
   
   ;set number-of-people 100
   ;set number-of-cars 25
@@ -482,7 +500,7 @@ end
 
 to update-cops
   ;; TODO: Implement better/new fine system with experiencing, seeing and hearing.
-  let prob 1 + random 100 
+  let prob 1 + random 100
   if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
   [
     ;; deliquents are people who walked through the red light
@@ -490,17 +508,56 @@ to update-cops
     
     ask deliquents 
     [
+      ; Caught red handed.
+      set label "EXP"
+      set label-color blue
+
+      ; Apply the fine to the cooldown.
+      ; TODO: Don't use cooldown, but something else.
+      set cooldown fine * caught-experienced-weight
+      
+      ; OLD CODE
       set own-profit  own-profit - fine
       set walked-through-red? false
-      
-      set label "CAUGHT"
-      set label-color blue
       
       if walker-type = "adaptive"
       [
         set adaptive-gone-reckless false
       ]
-      set cooldown fine ;; everyone gets a cooldown
+    ]
+    
+    ; Note: ask the delinquents again to prevent seeing some getting caught and then experiencing it ourselves later.
+    ask deliquents
+    [
+      ask people in-radius caught-saw-radius [
+        ; Make sure the same person isn't 'shocked' by seeing someone get caught twice or ...
+        ; even worse experience getting caught AND seeing someone getting caught.
+        if label = ""
+        [
+          ; Saw some getting caught red handed.
+          set label "SAW"
+          set label-color blue
+          
+          ; Apply the fine to the cooldown.
+          ; TODO: Don't use cooldown, but something else.
+          set cooldown fine * caught-saw-weight
+        ]
+      ]
+    ]
+    
+    ; Pick a few people at random for hearing the news.
+    ask people
+    [
+      let prob2 1 + random 100
+      if prob2 < caught-heard-chance and label = ""
+      [
+          set label "HEARD"
+          set label-color blue
+          
+          ; Apply the fine to the cooldown.
+          ; TODO: Don't use cooldown, but something else.
+          set cooldown fine * caught-heard-weight
+      ]
     ]
   ]
 end
@@ -790,7 +847,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-32
+92
 1
 1
 percent
