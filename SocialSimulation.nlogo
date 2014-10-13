@@ -592,6 +592,12 @@ to-report stat-reckless-percentage [total?]
   [ report stat-reckless / stat-pedestrians  ]
 end
 
+; The percentage of adaptive people in the simulation that have gone wreckless.
+; This will be the stat of interest.
+to-report stat-percentage-gone-wreckless
+  report (count people with [walker-type = "adaptive" and adaptive-gone-reckless = true]) / (count people with [walker-type = "adaptive"])
+end
+
 ;; END OF STATISTIC PROCEDURES
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -961,6 +967,24 @@ PENS
 "cautious" 1.0 0 -10899396 true "" "plot stat-percentage \"cautious\" true"
 "adaptive" 1.0 0 -1184463 true "" "plot stat-percentage \"adaptive\" true"
 "reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" true"
+
+PLOT
+1345
+505
+1545
+655
+Adaptive gone wreckless %
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-wreckless"
 
 @#$#@#$#@
 ## WHAT IS IT?
