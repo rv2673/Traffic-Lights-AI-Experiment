@@ -279,6 +279,9 @@ to update-person
       ; Determine a slightly random wait time.
       set wait-time (waiting-time-base + random waiting-time-diff)
       
+      ; Remove the caught label.
+      set label ""
+      
       ; Place the person on the blue waiting zone.
       ; Note: the y coordinate is randomized to reduce bias due to optimum crossing heights
       let ycoordinate (random-float (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor) ; Should be the same as in setup-people
@@ -480,7 +483,6 @@ end
 to update-cops
   ;; TODO: Implement better/new fine system with experiencing, seeing and hearing.
   let prob 1 + random 100 
-  let prob2 1 + random 100
   if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
   [
     ;; deliquents are people who walked through the red light
@@ -490,6 +492,10 @@ to update-cops
     [
       set own-profit  own-profit - fine
       set walked-through-red? false
+      
+      set label "CAUGHT"
+      set label-color blue
+      
       if walker-type = "adaptive"
       [
         set adaptive-gone-reckless false
@@ -784,7 +790,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-0
+32
 1
 1
 percent
