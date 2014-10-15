@@ -3,6 +3,18 @@ globals [
   ;prob-police-appearance             ;; in promille, so [0,1000]
   prob-police-enforcement             ;; in %, so [0,100] OR 100/2*jaywalkers
   
+  ; Experience variables, there are three ways to participate in someone getting caught:
+  ; (1) Experiencing: getting caught ourselves.
+  ; (2) Seeing: see someone getting caught.
+  ; (3) Hearing: someone telling you someone got caught.
+  caught-experienced-weight;
+  caught-saw-weight
+  caught-heard-weight
+  ; The radius around people caught that other people will see.
+  caught-saw-radius
+  ; The chance to hear the news on a per person basis.
+  caught-heard-chance
+  
   ; Car and pedestrian quantities
   ;number-of-people
   ;number-of-cars
@@ -111,6 +123,12 @@ end
 to setup-globals
   ;set prob-police-appearance 1
   set prob-police-enforcement 100 / (0.2 * number-of-people)
+  
+  set caught-experienced-weight 1.0
+  set caught-saw-weight 0.5
+  set caught-heard-weight 0.2
+  set caught-saw-radius 4
+  set caught-heard-chance 10
   
   ;set number-of-people 100
   ;set number-of-cars 25
@@ -294,6 +312,9 @@ to update-person
     [
       ; Determine a slightly random wait time.
       set wait-time (waiting-time-base + random waiting-time-diff)
+      
+      ; Remove the caught label.
+      set label ""
       
       ; Place the person on the blue waiting zone.
       ; Note: the y coordinate is randomized to reduce bias due to optimum crossing heights
@@ -499,8 +520,7 @@ end
 
 to update-cops
   ;; TODO: Implement better/new fine system with experiencing, seeing and hearing.
-  let prob 1 + random 100 
-  let prob2 1 + random 100
+  let prob 1 + random 100
   if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
   [
     ;; deliquents are people who walked through the red light
@@ -508,14 +528,60 @@ to update-cops
     
     ask deliquents 
     [
+      ; Caught red handed.
+      set label "EXP"
+      set label-color blue
+
+      ; Apply the fine to the cooldown.
+      ; TODO: Don't use cooldown, but something else.
+      set cooldown fine * caught-experienced-weight
+      
+      ; OLD CODE
       set own-profit  own-profit - fine
       set walked-through-red? false
+      
       if walker-type = "adaptive"
       [
         set adaptive-gone-reckless false
       ]
-      set cooldown fine ;; everyone gets a cooldown
       set adaptive-prob-cross adaptive-prob-cross * 0.1
+    ]
+    
+    ; Note: ask the delinquents again to prevent seeing some getting caught and then experiencing it ourselves later.
+    ask deliquents
+    [
+      ask people in-radius caught-saw-radius [
+        ; Make sure the same person isn't 'shocked' by seeing someone get caught twice or ...
+        ; even worse experience getting caught AND seeing someone getting caught.
+        if label = ""
+        [
+          ; Saw some getting caught red handed.
+          set label "SAW"
+          set label-color blue
+          
+          ; Apply the fine to the cooldown.
+          ; TODO: Don't use cooldown, but something else.
+          set cooldown fine * caught-saw-weight
+        ]
+      ]
+    ]
+    
+    ; Pick a few people at random for hearing the news (only if someone actually got caught).
+    if not (count deliquents = 0)
+    [
+      ask people
+      [
+        let prob2 1 + random 100
+        if prob2 < caught-heard-chance and label = ""
+        [
+          set label "HEARD"
+          set label-color blue
+          
+          ; Apply the fine to the cooldown.
+          ; TODO: Don't use cooldown, but something else.
+          set cooldown fine * caught-heard-weight
+        ]
+      ]
     ]
   ]
 end
@@ -611,6 +677,12 @@ to-report stat-reckless-percentage [total?]
   ifelse total?
   [ report stat-total-reckless / stat-total-pedestrians ]
   [ report stat-reckless / stat-pedestrians  ]
+end
+
+; The percentage of adaptive people in the simulation that have gone wreckless.
+; This will be the stat of interest.
+to-report stat-percentage-gone-wreckless
+  report (count people with [walker-type = "adaptive" and adaptive-gone-reckless = true]) / (count people with [walker-type = "adaptive"])
 end
 
 ;; END OF STATISTIC PROCEDURES
@@ -982,6 +1054,24 @@ PENS
 "cautious" 1.0 0 -10899396 true "" "plot stat-percentage \"cautious\" true"
 "adaptive" 1.0 0 -1184463 true "" "plot stat-percentage \"adaptive\" true"
 "reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" true"
+
+PLOT
+1345
+505
+1545
+655
+Adaptive gone wreckless %
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-wreckless"
 
 @#$#@#$#@
 ## WHAT IS IT?
