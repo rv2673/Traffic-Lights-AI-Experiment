@@ -62,6 +62,10 @@ globals [
   stat-total-red-lights
   stat-total-red-walking
   stat-total-adaptive-red-walking
+  
+  
+  ;The rate at which the probability to cross reduces
+  reducerate
 ]
 
 ; Person model
@@ -75,11 +79,14 @@ people-own [
   
   ; Adaptive type specific properties
   adaptive-threshold-time-gained
-  adaptive-threshold-time-gained-people-crossing
+  adaptive-threshold-people-crossing
   adaptive-gone-reckless
+  adaptive-fixed-prob-cross
+  adaptive-prob-cross
   
   ; Adaptive and reckless specific properties
   cooldown
+  
 ]
 
 ; Car model
@@ -145,6 +152,10 @@ to setup-globals
   set stat-total-red-walking 0
   set stat-total-adaptive-red-walking 0
   
+  
+  ;The rate at which the probability to cross reduces
+  set reducerate 2.0
+  
   ; Set the starting color of the traffic lights
   color-traffic-light-car
   color-traffic-light-pedestrian 
@@ -205,7 +216,9 @@ to setup-people
         [ set walker-type "adaptive"
           ; Adaptive people have additional variables
           set adaptive-threshold-time-gained (random 25) + 1
-          set adaptive-threshold-time-gained-people-crossing (random-float 0.5) + 0.15
+          set adaptive-threshold-people-crossing (random-float 0.5) + 0.15
+          set adaptive-fixed-prob-cross random-float 0.8 
+          set adaptive-prob-cross adaptive-fixed-prob-cross
           set adaptive-gone-reckless false ]
         [ set walker-type "reckless" ]] 
     
@@ -254,6 +267,9 @@ to update-person
   if cooldown > 0
   [
     set cooldown cooldown - 1
+    ;Here needs to come the call to the converging function
+    set adaptive-prob-cross (1 / reducerate) * sin(adaptive-prob-cross - adaptive-fixed-prob-cross) + adaptive-fixed-prob-cross
+    
   ]
   
   ; Check if the person is waiting, if so reduce the wait-time
@@ -325,7 +341,7 @@ end
 to update-adaptive-persons
   let percentage-red stat-percentage-red-walking false
   ;; some adaptive people saw enough people walk through red. Become reckless again!
-  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-time-gained-people-crossing and cooldown = 0]) 
+  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-people-crossing and cooldown = 0]) 
   [
     set adaptive-gone-reckless true
   ]
@@ -363,7 +379,11 @@ to-report should-move? [ movement ]
       ;; adaptive: only move if
       ;; 1. a cautious person would move or  
       ;; 2. observed average profit gained by crossing road while red is above X
-      ;; 3. there are enough people also crossing the road
+      ;;  and there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
+      if random-float 1.0 >= adaptive-prob-cross
+      [set adaptive-gone-reckless false
+        show adaptive-prob-cross
+        ]
       report cautious-should-move? movement or (not car-approaching? and adaptive-gone-reckless and average-profit > adaptive-threshold-time-gained) 
     ] 
     ;; reckless: only move if
@@ -462,9 +482,9 @@ to update-lights
     let percentage-red-walking stat-percentage-red-walking false
     ask people with [walker-type = "adaptive"]
     [
-      if adaptive-gone-reckless = true and percentage-red-walking < adaptive-threshold-time-gained-people-crossing
+      if adaptive-gone-reckless = true and percentage-red-walking < adaptive-threshold-people-crossing
       [
-        show adaptive-threshold-time-gained-people-crossing
+        show adaptive-threshold-people-crossing
         set adaptive-gone-reckless false
       ]
     ]
@@ -495,6 +515,7 @@ to update-cops
         set adaptive-gone-reckless false
       ]
       set cooldown fine ;; everyone gets a cooldown
+      set adaptive-prob-cross adaptive-prob-cross * 0.1
     ]
   ]
 end
@@ -664,7 +685,7 @@ car-green-time
 car-green-time
 1
 100
-100
+84
 1
 1
 NIL
@@ -679,7 +700,7 @@ pedestrian-green-time
 pedestrian-green-time
 1
 100
-20
+1
 1
 1
 NIL
@@ -694,7 +715,7 @@ number-of-people
 number-of-people
 1
 100
-20
+41
 1
 1
 NIL
@@ -709,7 +730,7 @@ number-of-cars
 number-of-cars
 0
 100
-10
+38
 1
 1
 NIL
@@ -778,7 +799,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-0
+20
 1
 1
 percent
@@ -847,7 +868,7 @@ fine
 fine
 1
 500
-241
+1
 10
 1
 NIL
