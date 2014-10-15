@@ -235,7 +235,7 @@ to setup-people
           ; Adaptive people have additional variables
           set adaptive-threshold-time-gained (random 25) + 1
           set adaptive-threshold-people-crossing (random-float 0.5) + 0.15
-          set adaptive-fixed-prob-cross random-float 0.8 
+          set adaptive-fixed-prob-cross random-float 0.3 + 0.6
           set adaptive-prob-cross adaptive-fixed-prob-cross
           set adaptive-gone-reckless false ]
         [ set walker-type "reckless" ]] 
@@ -401,11 +401,10 @@ to-report should-move? [ movement ]
       ;; 1. a cautious person would move or  
       ;; 2. observed average profit gained by crossing road while red is above X
       ;;  and there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
-      if random-float 1.0 >= adaptive-prob-cross
-      [set adaptive-gone-reckless false
-        show adaptive-prob-cross
-        ]
-      report cautious-should-move? movement or (not car-approaching? and adaptive-gone-reckless and average-profit > adaptive-threshold-time-gained) 
+      let factors 0
+      let chance adaptive-prob-cross + factors
+      ;; ADD FACTORS
+      report cautious-should-move? movement or (not car-approaching? and random-float 1.0 <= chance) 
     ] 
     ;; reckless: only move if
     ;; 1. a cautious person would move or
@@ -534,7 +533,8 @@ to update-cops
 
       ; Apply the fine to the cooldown.
       ; TODO: Don't use cooldown, but something else.
-      set cooldown fine * caught-experienced-weight
+      
+      set adaptive-prob-cross adaptive-prob-cross * 0.1 ;;MAKE FACTOR DEPENDENT ON FINE
       
       ; OLD CODE
       set own-profit  own-profit - fine
@@ -544,7 +544,6 @@ to update-cops
       [
         set adaptive-gone-reckless false
       ]
-      set adaptive-prob-cross adaptive-prob-cross * 0.1
     ]
     
     ; Note: ask the delinquents again to prevent seeing some getting caught and then experiencing it ourselves later.
@@ -561,7 +560,7 @@ to update-cops
           
           ; Apply the fine to the cooldown.
           ; TODO: Don't use cooldown, but something else.
-          set cooldown fine * caught-saw-weight
+          set adaptive-prob-cross max (list (adaptive-prob-cross - 0.2) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
         ]
       ]
     ]
@@ -579,7 +578,7 @@ to update-cops
           
           ; Apply the fine to the cooldown.
           ; TODO: Don't use cooldown, but something else.
-          set cooldown fine * caught-heard-weight
+          set adaptive-prob-cross max (list (adaptive-prob-cross - 0.1) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
         ]
       ]
     ]
@@ -802,7 +801,7 @@ number-of-cars
 number-of-cars
 0
 100
-38
+16
 1
 1
 NIL
@@ -871,7 +870,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-20
+100
 1
 1
 percent
@@ -1060,7 +1059,7 @@ PLOT
 505
 1545
 655
-Adaptive gone wreckless %
+Adaptive gone reckless %
 NIL
 NIL
 0.0
