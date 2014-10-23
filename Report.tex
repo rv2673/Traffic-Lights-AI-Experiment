@@ -84,7 +84,6 @@ In the existing simulation, pedestrians would look ahead from their current y po
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=.8\textwidth]{socsim1.png}
 \caption{Visualization of the simulation.}
 \label{ABlabel}
 \end{figure}
@@ -120,10 +119,33 @@ pedestrian walks through a red light.}
 The results for experiments 1 and 4, where no cars were on the road, did not change much, as expected. Interestingly, the results for experiments 2, 3, 5 and 6, when more cars were on the road, increased noticably. 
 
 \subsection{More advanced model}
+We adapted the movement logic of the pedestrians to arrive at the road spread out from each other and at varying y coordinates.
+
+\subsubsection{Motivation}
+When looking at the old model pedestrians would move across the world in a vertical band along the x-axis. This was countered by the slightly random movement speed of the pedestrians, but since the movement was evaluated each tick the resulting difference was minimal. Ultimately all the agents would arrive at the traffic light within a few ticks.
+
+The other aspect, varying the y-coordinate of the pedestrians, was needed to counter the same agent crossing an optimal spot multiple times. After implementing the viewing distance it became clear that crossing the road at the bottom was more profitable since it takes a while before the cars to enter the viewing range of the bottom most pedestrians when the cars' traffic light turns green.
+Since it is important for this simulation to keep reusing the same agents, recreating pedestrians anew wasn't an option.
+
+\subsubsection{Implementation}
+The implementation of the advanced model was done by creating a "waiting zone" in the world. The first column of patches are colored blue in the simulation to visualize this zone. Once a pedestrian enters this zone it will get a random number of ticks it has to wait and its y-coordinate is randomized.
+After the wait time is over the pedestrian will continue its normal movement routine.
+
+\subsubsection{Influences on the simulation}
 ..
 
 \subsection{Counting methods}
 ..
+
+\subsubsection{Motivation}
+Some of the figures extracted from the old simulation were meaningless. Many of the percentages were calculated by dividing the number of pedestrians that performed certain task, say walking through a red light, by the total number of pedestrians in the simulation. This was done without taking into account that some pedestrians weren't even near the road or that the counted pedestrians were already counted.
+This became an even bigger problem after the waiting zone was introduced. It allowed for an even bigger gap between the total number of people and the actual number of people crossing the road or near the road.
+
+\subsubsection{Implementation}
+..
+
+\subsubsection{Influences on the simulation}
+...
 
 \subsection{etc}
 ..
