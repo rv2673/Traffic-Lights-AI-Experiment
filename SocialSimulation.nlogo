@@ -75,9 +75,15 @@ globals [
   stat-total-red-walking
   stat-total-adaptive-red-walking
   
-  
   ;The rate at which the probability to cross reduces
   reducerate
+  
+  ; The distance (in patches) an agent looks around to see if other people are crossing (y/n)
+  influence-radius
+  ; The influence (factor) a reckless agent has on other people
+  influence-pos-factor
+  ; The influence (factor) a non-reckless agent has on other people
+  influence-neg-factor ; can be negative
 ]
 
 ; Person model
@@ -99,6 +105,9 @@ people-own [
   ; Adaptive and reckless specific properties
   cooldown
   
+  ; Factors in influence by people in this person's neighbourhood. Resets every crossing. See
+  ; should-move? for more info
+  influence-factor
 ]
 
 ; Car model
@@ -177,6 +186,10 @@ to setup-globals
   ; Set the starting color of the traffic lights
   color-traffic-light-car
   color-traffic-light-pedestrian 
+  
+  set influence-radius 10
+  set influence-pos-factor 0.95
+  set influence-neg-factor 0
 end
 
 ; Colors the car traffic light during setup
@@ -247,6 +260,7 @@ to setup-people
         [ set color yellow]
         [ set color red] ]
     set cooldown 0
+    set influence-factor 0
   ]
 end
 
@@ -320,6 +334,9 @@ to update-person
       ; Note: the y coordinate is randomized to reduce bias due to optimum crossing heights
       let ycoordinate (random-float (max-pycor * 2 - (max-pycor * 0.4)) - max-pycor) ; Should be the same as in setup-people
       setxy min-pxcor ycoordinate
+      
+      ; Reset influence factor
+      set influence-factor 0
     ]
   ]
 end
@@ -376,7 +393,7 @@ to-report car-in-range? [ ycar yped ]
   let range2? (ycar2 > yped and ycar2 < yped + pedestrian-viewing-range)
   
   ifelse (range1? or range2?)
-  [report true]
+  [report true ]
   [report false]
   
 end
@@ -384,7 +401,7 @@ end
 to-report should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
   let y  ycor
-  let car-approaching?  any? cars with [car-in-range? ycor y] ;;[ycor < y + pedestrian-viewing-range and ycor > y]
+  let car-approaching?  any? cars with [car-in-range? ycor y]
   let average-profit mean [own-profit] of people with [walker-type != "cautious"]
   ;; cautious: only move if
   ;; 1. we are on or across the road or 
@@ -401,9 +418,30 @@ to-report should-move? [ movement ]
       ;; 1. a cautious person would move or  
       ;; 2. observed average profit gained by crossing road while red is above X
       ;;  and there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
-      let factors 0
-      let chance adaptive-prob-cross + factors
-      ;; ADD FACTORS
+      
+      let near-people people in-radius influence-radius with [self != myself]
+      let vals [0] ; We don't want an empty list if no one is around
+      
+      ask near-people
+      [
+        ifelse walked-through-red? = true[
+         set vals lput influence-pos-factor vals 
+        ][
+         set vals lput influence-neg-factor vals
+        ]
+      ]
+      
+      ;; Increase the influence factor if necessary
+      let new-factor max list 0 (mean vals)      
+      set influence-factor max list new-factor influence-factor
+      
+      ;; Calculate the chance
+      let chance adaptive-prob-cross
+      if apply-influence-factor
+      [
+        set chance min list 1 (chance + influence-factor)
+      ]
+      
       report cautious-should-move? movement or (not car-approaching? and random-float 1.0 <= chance) 
     ] 
     ;; reckless: only move if
@@ -413,7 +451,7 @@ to-report should-move? [ movement ]
       report cautious-should-move? movement or (not car-approaching? and cooldown = 0)
     ]
   ]
-end  
+end
 
 to-report cautious-should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
@@ -586,7 +624,7 @@ end
 ;; END OF UPDATE PROCEDURES
 
 
-;; STATISTIC
+;; STATISTICS
 to stat-start-cycle
   ; Increase the cycle counter.
   set stat-cycles stat-cycles + 1
@@ -655,6 +693,15 @@ to-report stat-percentage-red-walking [total?]
   [ report stat-red-walking / stat-pedestrians ]
 end
 
+; Average influence factor of adaptive pedestrians. 
+to-report stat-avg-inf-factor
+  let inf-factors []
+  ask (people with [walker-type = "adaptive"])
+  [
+    set inf-factors lput influence-factor inf-factors
+  ]
+  report mean inf-factors
+end
 
 ; DO NOT call directly, use stat-percentage instead
 to-report stat-cautious-percentage [total?]
@@ -826,9 +873,9 @@ PENS
 
 PLOT
 5
-465
-180
-637
+505
+185
+677
 Average profit reckless
 Time
 Profit
@@ -844,9 +891,9 @@ PENS
 
 PLOT
 5
-310
-180
-460
+350
+185
+500
 Average profit adaptive
 Time
 Profit
@@ -1054,10 +1101,10 @@ PENS
 "reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" true"
 
 PLOT
-1345
-505
-1545
-655
+1295
+465
+1495
+615
 Adaptive gone reckless %
 NIL
 NIL
@@ -1070,6 +1117,35 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-wreckless"
+
+PLOT
+1505
+465
+1705
+615
+Average Influence Factor 
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot stat-avg-inf-factor"
+
+SWITCH
+5
+300
+185
+333
+apply-influence-factor
+apply-influence-factor
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
