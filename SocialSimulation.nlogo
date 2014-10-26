@@ -1,7 +1,6 @@
 globals [
   ; Police and fine variables
   ;prob-police-appearance             ;; in promille, so [0,1000]
-  prob-police-enforcement             ;; in %, so [0,100] OR 100/2*jaywalkers
   
   ; Experience variables, there are three ways to participate in someone getting caught:
   ; (1) Experiencing: getting caught ourselves.
@@ -96,7 +95,6 @@ people-own [
   wait-time
   
   ; Adaptive type specific properties
-  adaptive-threshold-time-gained
   adaptive-threshold-people-crossing
   adaptive-gone-reckless
   adaptive-fixed-prob-cross
@@ -128,7 +126,6 @@ end
 
 to setup-globals
   ;set prob-police-appearance 1
-  set prob-police-enforcement 100 / (0.2 * number-of-people)
   
   set caught-experienced-weight 1.0
   set caught-saw-weight 0.5
@@ -243,7 +240,6 @@ to setup-people
       [ ifelse prob <= 80
         [ set walker-type "adaptive"
           ; Adaptive people have additional variables
-          set adaptive-threshold-time-gained (random 25) + 1
           set adaptive-threshold-people-crossing (random-float 0.5) + 0.15
           set adaptive-fixed-prob-cross random-float 0.3 + 0.6
           set adaptive-prob-cross adaptive-fixed-prob-cross
@@ -406,8 +402,7 @@ to-report should-move? [ movement ]
     [
       ;; adaptive: only move if
       ;; 1. a cautious person would move or  
-      ;; 2. observed average profit gained by crossing road while red is above X
-      ;;  and there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
+      ;; 2. there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
       
       let near-people people in-radius influence-radius with [self != myself]
       let vals [0] ; We don't want an empty list if no one is around
@@ -517,9 +512,7 @@ to update-lights
     ask people with [walker-type = "adaptive"]
     [
       if adaptive-gone-reckless = true and percentage-red-walking < adaptive-threshold-people-crossing
-      [
-        set adaptive-gone-reckless false
-      ]
+      [ set adaptive-gone-reckless false ]
     ]
 
     ; Start a new cycle.
