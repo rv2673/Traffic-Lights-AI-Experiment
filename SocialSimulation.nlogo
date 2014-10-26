@@ -102,9 +102,6 @@ people-own [
   adaptive-fixed-prob-cross
   adaptive-prob-cross
   
-  ; Adaptive and reckless specific properties
-  cooldown
-  
   ; Factors in influence by people in this person's neighbourhood. Resets every crossing. See
   ; should-move? for more info
   influence-factor
@@ -259,7 +256,6 @@ to setup-people
       [ ifelse walker-type = "adaptive"
         [ set color yellow]
         [ set color red] ]
-    set cooldown 0
     set influence-factor 0
   ]
 end
@@ -295,14 +291,8 @@ end
  
 ; Update method for people
 to update-person
-  ; Reduce the cooldown
-  if cooldown > 0
-  [
-    set cooldown cooldown - 1
-    ;Here needs to come the call to the converging function
-    set adaptive-prob-cross (1 / reducerate) * sin(adaptive-prob-cross - adaptive-fixed-prob-cross) + adaptive-fixed-prob-cross
-    
-  ]
+  ; Run the converging function
+  set adaptive-prob-cross (1 / reducerate) * sin(adaptive-prob-cross - adaptive-fixed-prob-cross) + adaptive-fixed-prob-cross
   
   ; Check if the person is waiting, if so reduce the wait-time
   ifelse wait-time > 0
@@ -364,7 +354,7 @@ to move-person
       [
         set profit-gained 0
       ]
-      set own-profit  own-profit + (profit-gained)
+      set own-profit own-profit + (profit-gained)
       
       ; Count the pedestrian towards the red walkers.
       stat-count-red-walker self
@@ -379,7 +369,7 @@ end
 to update-adaptive-persons
   let percentage-red stat-percentage-red-walking false
   ;; some adaptive people saw enough people walk through red. Become reckless again!
-  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-people-crossing and cooldown = 0]) 
+  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-people-crossing]) 
   [
     set adaptive-gone-reckless true
   ]
@@ -400,15 +390,16 @@ end
 
 to-report should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
-  let y  ycor
-  let car-approaching?  any? cars with [car-in-range? ycor y]
-  let average-profit mean [own-profit] of people with [walker-type != "cautious"]
-  ;; cautious: only move if
-  ;; 1. we are on or across the road or 
-  ;; 2. the light is green and we will not get on the road or
-  ;; 3. the light is green and and no car is approaching us and we will get on the road
+  let y ycor
+  let car-approaching? any? cars with [car-in-range? ycor y]
+  
+  ;; Depending on the walker-type, certain conditions must be met before they move.
   ifelse walker-type = "cautious" 
   [
+    ;; cautious: only move if
+    ;; 1. they are on or across the road or
+    ;; 2. they won't get on the road or
+    ;; 3. the light is green and and no car is approaching them and they will get on the road
     report cautious-should-move? movement
   ] 
   [
@@ -446,9 +437,9 @@ to-report should-move? [ movement ]
     ] 
     ;; reckless: only move if
     ;; 1. a cautious person would move or
-    ;; 2. we expect that no car will not hit us before we crossed the road (through red light)
+    ;; 2. they expect that no car will not hit them before they crossed the road (through red light)
     [
-      report cautious-should-move? movement or (not car-approaching? and cooldown = 0)
+      report cautious-should-move? movement or (not car-approaching?)
     ]
   ]
 end
@@ -456,28 +447,19 @@ end
 to-report cautious-should-move? [ movement ]
   let on-or-across-road? xcor > road-start-xpos
   let y ycor
-  let car-on-road?  any? cars with [ycor < car-traffic-light-ypos and ycor > y]
+  let car-on-road? any? cars with [ycor < car-traffic-light-ypos and ycor > y]
   
   ;; cautious: only move if
-  ;; 1. we are on or across the road or 
-  ;; 2. we will not get on the road or
-  ;; 3. the light is green and and no car is approaching us and we will get on the road
-  ;; case 1
+  ;; 1. they are on or across the road or
   if on-or-across-road?
-  [
-    report true
-  ]
-  ;; case 2
+  [ report true ]
+  ;; 2. they won't get on the road or
   if ceiling(xcor + movement) <= road-start-xpos
-  [
-    report true 
-  ]
-  ;; case 3
+  [ report true  ]
+  ;; 3. the light is green and and no car is approaching them and they will get on the road
   if not pedestrian-traffic-light-red? and not car-on-road?
-  [
-    report true  
-  ]
-  
+  [ report true ]
+
   report false
 end
 
@@ -485,13 +467,8 @@ to move-car
   ; A car moves with a randomized speed.
   let movement (random 4 + 1)
   
-  ; -- OLD CODE
-  ; let no-return ycor < car-traffic-light-ypos
-  ; if not car-traffic-light-red? or round (ycor + movement) < round car-traffic-light-ypos or no-return [ 
-  ; --
-  if not car-traffic-light-red? or ycor <= car-traffic-light-ypos [ 
-    fd movement 
-  ]
+  if not car-traffic-light-red? or ycor <= car-traffic-light-ypos
+  [ fd movement ]
 end
 
 to update-world
@@ -555,7 +532,6 @@ to update-lights
 end
 
 to update-cops
-  ;; TODO: Implement better/new fine system with experiencing, seeing and hearing.
   let prob 1 + random 100
   if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
   [
@@ -569,12 +545,10 @@ to update-cops
       set label-color blue
 
       ; Apply the fine to the cooldown.
-      ; TODO: Don't use cooldown, but something else.
-      
       set adaptive-prob-cross adaptive-prob-cross * 0.1 ;;MAKE FACTOR DEPENDENT ON FINE
       
       ; OLD CODE
-      set own-profit  own-profit - fine
+      set own-profit own-profit - fine ;; FIXME: Reduce own-profit differently (???)
       set walked-through-red? false
       
       if walker-type = "adaptive"
@@ -596,7 +570,6 @@ to update-cops
           set label-color blue
           
           ; Apply the fine to the cooldown.
-          ; TODO: Don't use cooldown, but something else.
           set adaptive-prob-cross max (list (adaptive-prob-cross - 0.2) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
         ]
       ]
@@ -614,7 +587,6 @@ to update-cops
           set label-color blue
           
           ; Apply the fine to the cooldown.
-          ; TODO: Don't use cooldown, but something else.
           set adaptive-prob-cross max (list (adaptive-prob-cross - 0.1) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
         ]
       ]
@@ -854,28 +826,10 @@ NIL
 HORIZONTAL
 
 PLOT
-830
-30
-1005
-203
-Average Profit people
-Time
-Profit
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot mean [own-profit] of people"
-
-PLOT
 5
-505
+495
 185
-677
+667
 Average profit reckless
 Time
 Profit
@@ -891,9 +845,9 @@ PENS
 
 PLOT
 5
-350
+340
 185
-500
+490
 Average profit adaptive
 Time
 Profit
@@ -922,24 +876,6 @@ prob-police-appearance
 percent
 HORIZONTAL
 
-PLOT
-830
-515
-1075
-665
-average cooldown
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot mean [cooldown] of people with [walker-type = \"adaptive\" or walker-type = \"reckless\"]"
-
 SLIDER
 5
 225
@@ -956,10 +892,10 @@ NIL
 HORIZONTAL
 
 PLOT
-1110
-110
-1310
-260
+1255
+515
+1455
+665
 Average Adaptive that walk trough red
 NIL
 NIL
@@ -985,10 +921,10 @@ waiting-zone
 -1000
 
 PLOT
-1345
-10
-1660
-255
+880
+60
+1195
+305
 Red light walkers %
 NIL
 NIL
@@ -1003,10 +939,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot stat-percentage-red-walking false"
 
 MONITOR
-1345
-260
-1497
-305
+880
+310
+1032
+355
 Pedestrians crossing
 stat-pedestrians
 1
@@ -1014,10 +950,10 @@ stat-pedestrians
 11
 
 MONITOR
-1505
-260
-1660
-305
+1040
+310
+1195
+355
 Red walkers
 stat-red-walking
 1
@@ -1025,10 +961,10 @@ stat-red-walking
 11
 
 PLOT
-1295
-310
-1495
-460
+830
+360
+1030
+510
 Walker type %
 NIL
 NIL
@@ -1045,10 +981,10 @@ PENS
 "reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" false"
 
 PLOT
-1505
-310
-1705
-460
+1040
+360
+1240
+510
 Total walker type %
 NIL
 NIL
@@ -1065,10 +1001,10 @@ PENS
 "reckless" 1.0 0 -2674135 true "" "plot stat-percentage \"reckless\" true"
 
 PLOT
-1295
-465
-1495
-615
+830
+515
+1030
+665
 Adaptive gone reckless %
 NIL
 NIL
@@ -1083,10 +1019,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-reckless"
 
 PLOT
-1505
-465
-1705
-615
+1040
+515
+1240
+665
 Average Influence Factor 
 NIL
 NIL
