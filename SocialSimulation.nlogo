@@ -128,8 +128,8 @@ to setup-globals
   ;set prob-police-appearance 1
   
   set caught-experienced-weight 1.0
-  set caught-saw-weight 0.5
-  set caught-heard-weight 0.2
+  set caught-saw-weight 0.4
+  set caught-heard-weight 0.1
   set caught-saw-radius 4
   set caught-heard-chance 10
   
@@ -173,9 +173,8 @@ to setup-globals
   set stat-total-red-walking 0
   set stat-total-adaptive-red-walking 0
   
-  
   ;The rate at which the probability to cross reduces
-  set reducerate 2.0
+  set reducerate 1.0
   
   ; Set the starting color of the traffic lights
   color-traffic-light-car
@@ -241,7 +240,7 @@ to setup-people
         [ set walker-type "adaptive"
           ; Adaptive people have additional variables
           set adaptive-threshold-people-crossing (random-float 0.5) + 0.15
-          set adaptive-fixed-prob-cross random-float 0.3 + 0.6
+          set adaptive-fixed-prob-cross random-float 0.3 + 0.3
           set adaptive-prob-cross adaptive-fixed-prob-cross
           set adaptive-gone-reckless false ]
         [ set walker-type "reckless" ]] 
@@ -288,8 +287,11 @@ end
 ; Update method for people
 to update-person
   ; Run the converging function
-  set adaptive-prob-cross (1 / reducerate) * sin(adaptive-prob-cross - adaptive-fixed-prob-cross) + adaptive-fixed-prob-cross
-  
+  if ticks mod 10 = 0 and walker-type = "adaptive"
+  [ 
+    set adaptive-prob-cross (1.0 / reducerate) * sin((adaptive-prob-cross - adaptive-fixed-prob-cross) * 180.0 / pi) + adaptive-fixed-prob-cross
+  ] 
+   
   ; Check if the person is waiting, if so reduce the wait-time
   ifelse wait-time > 0
   [
@@ -403,7 +405,6 @@ to-report should-move? [ movement ]
       ;; adaptive: only move if
       ;; 1. a cautious person would move or  
       ;; 2. there are enough people also crossing the road and does not feel that the chance of being caught is high enough.
-      
       let near-people people in-radius influence-radius with [self != myself]
       let vals [0] ; We don't want an empty list if no one is around
       
@@ -536,8 +537,9 @@ to update-cops
       set label "EXP"
       set label-color blue
 
-      ; Apply the fine to the cooldown.
-      set adaptive-prob-cross adaptive-prob-cross * 0.1 ;;MAKE FACTOR DEPENDENT ON FINE
+      ;; Reduce the probability of crossing by a percentage of the current probability.
+      ;; Note: in case the fine is 100% effective, there's no chance of crossing.
+      set adaptive-prob-cross adaptive-prob-cross - (adaptive-prob-cross * (fine / 100) * caught-experienced-weight)
       
       ;; If the fine is 100% effective, all our previous profit wasn't worth it.
       set own-profit own-profit * (1 - fine / 100)
@@ -560,7 +562,7 @@ to update-cops
           set label-color blue
           
           ; Apply the fine to the cooldown.
-          set adaptive-prob-cross max (list (adaptive-prob-cross - 0.2) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
+          set adaptive-prob-cross adaptive-prob-cross - (adaptive-prob-cross * (fine / 100) * caught-saw-weight)
         ]
       ]
     ]
@@ -577,7 +579,7 @@ to update-cops
           set label-color blue
           
           ; Apply the fine to the cooldown.
-          set adaptive-prob-cross max (list (adaptive-prob-cross - 0.1) 0) ;;MAKE FACTOR DEPENDENT ON FINE OR NOT
+          set adaptive-prob-cross adaptive-prob-cross - adaptive-prob-cross;(adaptive-prob-cross * (fine / 100) * caught-heard-weight)
         ]
       ]
     ]
@@ -875,7 +877,7 @@ fine
 fine
 0
 100
-10
+50
 10
 1
 NIL
