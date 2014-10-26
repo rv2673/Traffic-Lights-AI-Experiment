@@ -348,7 +348,8 @@ to move-person
     ;; made it across the road without being spotted
     if (xcor > road-end-xpos or xcor + movement > road-end-xpos) and walked-through-red? = true
     [
-      set walked-through-red? false 
+      set walked-through-red? false
+      ;; Increase the profit the pedestrian gained
       let profit-gained (tick-pedestrian-green + 5 - ticks) * 0.1
       if profit-gained < 0 
       [
@@ -369,10 +370,8 @@ end
 to update-adaptive-persons
   let percentage-red stat-percentage-red-walking false
   ;; some adaptive people saw enough people walk through red. Become reckless again!
-  ask (people with [walker-type = "adaptive" and adaptive-gone-reckless = false and percentage-red >= adaptive-threshold-people-crossing]) 
-  [
-    set adaptive-gone-reckless true
-  ]
+  ask (people with [walker-type = "adaptive" and percentage-red >= adaptive-threshold-people-crossing]) 
+  [ set adaptive-gone-reckless true ]
 end
 
 to-report car-in-range? [ ycar yped ]
@@ -533,7 +532,7 @@ end
 
 to update-cops
   let prob 1 + random 100
-  if prob < prob-police-appearance and ticks mod 50 = 0 + random 11
+  if prob < prob-police-appearance and ticks mod 10 = 0
   [
     ;; deliquents are people who walked through the red light
     let deliquents (people with [walked-through-red? = true])
@@ -547,14 +546,12 @@ to update-cops
       ; Apply the fine to the cooldown.
       set adaptive-prob-cross adaptive-prob-cross * 0.1 ;;MAKE FACTOR DEPENDENT ON FINE
       
-      ; OLD CODE
-      set own-profit own-profit - fine ;; FIXME: Reduce own-profit differently (???)
+      ;; If the fine is 100% effective, all our previous profit wasn't worth it.
+      set own-profit own-profit * (1 - fine / 100)
       set walked-through-red? false
       
       if walker-type = "adaptive"
-      [
-        set adaptive-gone-reckless false
-      ]
+      [ set adaptive-gone-reckless false ]
     ]
     
     ; Note: ask the delinquents again to prevent seeing some getting caught and then experiencing it ourselves later.
@@ -774,7 +771,7 @@ car-green-time
 car-green-time
 1
 100
-84
+50
 1
 1
 NIL
@@ -789,7 +786,7 @@ pedestrian-green-time
 pedestrian-green-time
 1
 100
-1
+25
 1
 1
 NIL
@@ -804,7 +801,7 @@ number-of-people
 number-of-people
 1
 100
-41
+40
 1
 1
 NIL
@@ -819,7 +816,7 @@ number-of-cars
 number-of-cars
 0
 100
-16
+15
 1
 1
 NIL
@@ -870,7 +867,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-100
+25
 1
 1
 percent
@@ -883,9 +880,9 @@ SLIDER
 258
 fine
 fine
-1
-500
-1
+0
+100
+10
 10
 1
 NIL
