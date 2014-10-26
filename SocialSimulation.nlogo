@@ -724,13 +724,13 @@ to-report stat-reckless-percentage [total?]
   [ report stat-reckless / stat-pedestrians  ]
 end
 
-; The percentage of adaptive people in the simulation that have gone wreckless.
+; The percentage of adaptive people in the simulation that have gone reckless.
 ; This will be the stat of interest.
-to-report stat-percentage-gone-wreckless
+to-report stat-percentage-gone-reckless
   report (count people with [walker-type = "adaptive" and adaptive-gone-reckless = true]) / (count people with [walker-type = "adaptive"])
 end
 
-;; END OF STATISTIC PROCEDURES
+;; END OF STATISTICS PROCEDURES
 @#$#@#$#@
 GRAPHICS-WINDOW
 190
@@ -924,24 +924,6 @@ HORIZONTAL
 
 PLOT
 830
-360
-1075
-510
-Red light walkers %
-NIL
-NIL
-0.0
-10.0
-0.0
-1.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot stat-red-walking / number-of-people"
-
-PLOT
-830
 515
 1075
 665
@@ -957,24 +939,6 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot mean [cooldown] of people with [walker-type = \"adaptive\" or walker-type = \"reckless\"]"
-
-PLOT
-830
-205
-1070
-355
-Number of adaptives gone reckless
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot count people with [walker-type = \"adaptive\" and adaptive-gone-reckless = true]"
 
 SLIDER
 5
@@ -1116,7 +1080,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-wreckless"
+"default" 1.0 0 -16777216 true "" "plot stat-percentage-gone-reckless"
 
 PLOT
 1505
@@ -1490,7 +1454,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.5
+NetLogo 5.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
