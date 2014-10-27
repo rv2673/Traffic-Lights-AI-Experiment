@@ -151,15 +151,55 @@ The implementation is done by counting the number of pedestrians per cycle and u
 
 \section{Simulation}
 \subsection{Setup}
-Short summary of the setup: parameters, why they were chosen
+The figures we are interested in are the actual amount of adaptive pedestrians that cross the road during a red light and the likeliness that they walk through a red light. During the simulation the following parameters will stay the same:
+\begin{itemize}
+\item Pedestrians: $40$
+\item Cars: $15$
+\item Pedestrian green time: $25$ ticks
+\item Car green time: $50$ ticks
+\end{itemize}
+These values aren't based on any real world values, but turned out to exhibit behaviour that allows all implemented features to be used. If the pedestrians' light is red there are still gaps in the approaching cars for pedestrians to cross the road. Furthermore there are moments that only a few pedestrians are next to road and moments there are plenty allowing both influenced and uninfluenced probabilities of crossing. 
+
+Each simulation will be run for $5000$ ticks. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$.
 
 \subsection{Results}
-Short summary of the results of the simulation, perhaps a few remakrs about the differences with the original results.
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 21.5 / 41.2 & 15.2 / 24.6 & 15.7 / 17.3 & 16.6 / 17.3  \\
+  40\%  & 21.7 / 51.0 & 14.7 / 34.6 & 11.9 / 19.8 & 13.4 / 18.5  \\
+  60\%  & 17.6 / 43.4 & 11.2 / 19.3 & 11.5 / 24.1 &  8.8 / 13.3  \\
+  80\%  & 13.1 / 42.6 & 11.2 / 31.5 & 15.1 / 24.2 &  9.5 / 15.6  \\
+  100\% & 10.1 / 45.7 & 15.4 / 27.2 &  7.3 / 24.2 &  6.7 / 16.3  \\
+\end{tabular}
+\caption{Results of the simulation, each cell contains two values, the first is the probability an adaptive walks through red and the second is the actual percentage of adaptive that walk through red.}
+\end{table}
+If we divide the average percentage of adaptive walking through red by their chance we can see how the chance corresponds to the actual measured value.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 1.9 & 1.6 & 1.1 & 1.0  \\
+  40\%  & 2.4 & 2.4 & 1.7 & 1.4  \\
+  60\%  & 2.5 & 1.7 & 2.1 & 1.5  \\
+  80\%  & 3.3 & 2.8 & 1.6 & 1.6  \\
+  100\% & 4.5 & 1.8 & 3.3 & 2.4  \\
+\end{tabular}
+\caption{... }
+\end{table}
 
 \clearpage
 
 \section{Conclusion}
-Conclusion
+When looking at the result it becomes clear that increasing the effectiveness without increasing the police presence will reduce the chance of adaptive walking through red, but the actual percentage of those adaptive walking through red stays roughly the same. This is most likely due to peer pressure. Since getting caught is unlikely, but once you get caught it is effective, the probability will vary greatly among the adaptive. When an adaptive with a high probability walks through red it will increase the chance of all adaptives to do the same. An adaptive with an average probability crosses the road due to the first one and gives a boots to the other adaptive with a lower probability.
+
+On the other hand, only increasing the police presence but not the effectiveness of the fine will bring the actual percentage of adaptive crossing closer to the average probability of the adaptive crossing. The probability of the adaptive crossing falls slightly when increasing the presence.
+
+So increasing the fine results in a lower red walking chance, but leaves the actual percentage the same. Increasing the police presence lowers the actual percentage of red walking and leaves the chance roughly the same. One would assume that increasing both would result in the best possible outcome. But looking at the results that isn't the case...
 
 \clearpage
 
