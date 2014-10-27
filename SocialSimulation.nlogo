@@ -657,6 +657,15 @@ to-report stat-percentage-red-walking [total?]
   [ report stat-red-walking / stat-pedestrians ]
 end
 
+to-report stat-avg-percentage-adaptive-red-walking
+  let numerator ((stat-total-adaptive-red-walking) / (stat-total-red-lights + 1))
+  let denominator ((stat-total-pedestrians) / (stat-total-red-lights + 1))
+  
+  if denominator = 0
+  [ report 0 ]
+  report numerator / denominator
+end
+
 ; Average influence factor of adaptive pedestrians. 
 to-report stat-avg-inf-factor
   let inf-factors []
@@ -862,8 +871,8 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-25
-1
+30
+5
 1
 percent
 HORIZONTAL
@@ -877,7 +886,7 @@ fine
 fine
 0
 100
-50
+100
 10
 1
 NIL
@@ -899,7 +908,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot ((stat-total-red-walking) / (stat-total-red-lights + 1)) / number-of-people"
+"default" 1.0 0 -16777216 true "" "plot stat-avg-percentage-adaptive-red-walking"
 
 SWITCH
 5
@@ -1038,6 +1047,24 @@ apply-influence-factor
 0
 1
 -1000
+
+PLOT
+1255
+360
+1455
+510
+Average Adaptive probability
+NIL
+NIL
+0.0
+10.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot mean [adaptive-prob-cross] of people with [walker-type = \"adaptive\"]"
 
 @#$#@#$#@
 ## WHAT IS IT?
