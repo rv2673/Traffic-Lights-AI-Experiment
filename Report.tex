@@ -142,10 +142,7 @@ Some of the figures extracted from the old simulation were meaningless. Many of 
 This became an even bigger problem after the waiting zone was introduced. It allowed for an even bigger gap between the total number of people and the actual number of people crossing the road or near the road.
 
 \subsubsection{Implementation}
-..
-
-\subsubsection{Influences on the simulation}
-...
+The implementation is done by counting the number of pedestrians per cycle and using that as denominator for calculating the percentages. Every pedestrian approaching the road will be counted towards the total of the current cycle. A new cycle starts whenever the pedestrians' traffic light goes red.
 
 \subsection{etc}
 ..
