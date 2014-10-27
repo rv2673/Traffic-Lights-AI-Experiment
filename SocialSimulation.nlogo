@@ -428,7 +428,7 @@ to-report should-move? [ movement ]
         set chance min list 1 (chance + influence-factor)
       ]
       
-      report cautious-should-move? movement or (not car-approaching? and random-float 1.0 <= chance) 
+      report cautious-should-move? movement or (not car-approaching? and random-float 1.0 <= chance and label = "") 
     ] 
     ;; reckless: only move if
     ;; 1. a cautious person would move or
@@ -735,7 +735,7 @@ ticks
 BUTTON
 75
 10
-138
+140
 43
 NIL
 go
@@ -871,7 +871,7 @@ prob-police-appearance
 prob-police-appearance
 0
 100
-30
+25
 5
 1
 percent
@@ -886,7 +886,7 @@ fine
 fine
 0
 100
-100
+20
 10
 1
 NIL
