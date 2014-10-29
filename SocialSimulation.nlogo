@@ -579,7 +579,7 @@ to update-cops
           set label-color blue
           
           ; Apply the fine to the cooldown.
-          set adaptive-prob-cross adaptive-prob-cross - adaptive-prob-cross;(adaptive-prob-cross * (fine / 100) * caught-heard-weight)
+          set adaptive-prob-cross adaptive-prob-cross - (adaptive-prob-cross * (fine / 100) * caught-heard-weight)
         ]
       ]
     ]
