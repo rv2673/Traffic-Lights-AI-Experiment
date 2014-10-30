@@ -154,13 +154,17 @@ The implementation is done by counting the number of pedestrians per cycle and u
 We changed the crossing behaviour of adaptive people to be based on chance instead of being based on a fixed treshold.
 
 \subsubsection{Motivation}
-In the old model adaptives would cross when a certain treshold was reached and there was no car approaching. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding with the height of the fine. However we found that this does not approximate human decison making very well. Decison are no alway rational and based on fixed rules and values. To better approximate this decision of crossing at a red light we base our decsion making on chance instead of a fixed number. 
+In the old model adaptives would cross when a certain treshold was reached and there was no car approaching. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding with the height of the fine. However we found that this does not approximate human decison making very well. Decison are not always rational and based on fixed rules and values. To better approximate this decision of crossing at a red light we base our decsion making on chance instead of a fixed number. 
 
 The chance to cross at a certain moment is found by looking at the circumanstances and experiences from the past. Those influence the chance by increasing the chance in favor of one outcome. This way we can easily implement multiple factors that each influence the chance to cross in some way. 
 
-We chose that personal experience played a big role in decision making, as is shown in ..... The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience diminshes over time. But experience is not only experiencing something yourself, like getting a fine, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
+We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. This study ......$1$ looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. So we set the fine in effectiveness instead of a certain money value. 
+
+We found that personal experience plays a big role in decision making, as is shown in ..$2$... The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
 
 \subsubsection{Implementation}
+
+The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning 
 
 \clearpage
 
