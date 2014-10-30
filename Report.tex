@@ -172,43 +172,124 @@ The way we implemented our new model for crossing is by removing the cooldown an
 \subsection{Setup}
 The figures we are interested in are the actual amount of adaptive pedestrians that cross the road during a red light and the likeliness that they walk through a red light. During the simulation the following parameters will stay the same:
 \begin{itemize}
-\item Pedestrians: $40$
-\item Cars: $15$
 \item Pedestrian green time: $25$ ticks
 \item Car green time: $50$ ticks
+\item Experiencing weight: 1.0
+\item Seeing weight: 0.4
+\item Hearing weight: 0.1
 \end{itemize}
 These values aren't based on any real world values, but turned out to exhibit behaviour that allows all implemented features to be used. If the pedestrians' light is red there are still gaps in the approaching cars for pedestrians to cross the road. Furthermore there are moments that only a few pedestrians are next to road and moments there are plenty allowing both influenced and uninfluenced probabilities of crossing. 
 
-Each simulation will be run for $5000$ ticks. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$.
+Each simulation will be run for $10000$ ticks. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$. These twenty experiments are repeated for different number of pedestrians and number of cars. These will vary from high and low where high is 50 for pedestrian and 80 for cars, low is 20 for pedestrians and 40 for cars.
 
-\subsection{Results}
+\clearpage
+\subsection{Results 20 pedestrians and 40 cars}
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
   Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
-  20\%  & 21.5 / 41.2 & 15.2 / 24.6 & 15.7 / 17.3 & 16.6 / 17.3  \\
-  40\%  & 21.7 / 51.0 & 14.7 / 34.6 & 11.9 / 19.8 & 13.4 / 18.5  \\
-  60\%  & 17.6 / 43.4 & 11.2 / 19.3 & 11.5 / 24.1 &  8.8 / 13.3  \\
-  80\%  & 13.1 / 42.6 & 11.2 / 31.5 & 15.1 / 24.2 &  9.5 / 15.6  \\
-  100\% & 10.1 / 45.7 & 15.4 / 27.2 &  7.3 / 24.2 &  6.7 / 16.3  \\
+  20\%  & 30.2 / 37.0 & 22.1 / 25.9 & 20.9 / 19.3 & 21.1 / 16.7  \\
+  40\%  & 22.0 / 31.1 & 18.0 / 26.3 & 17.7 / 20.7 & 17.3 / 16.5  \\
+  60\%  & 20.6 / 31.4 & 18.8 / 27.4 & 16.0 / 20.7 & 14.3 / 17.7  \\
+  80\%  & 21.5 / 23.4 & 16.3 / 28.2 & 14.5 / 20.9 & 12.9 / 17.5  \\
+  100\% & 24.8 / 27.1 & 16.5 / 29.9 & 13.8 / 22.4 & 11.0 / 16.2  \\
 \end{tabular}
-\caption{Results of the simulation, each cell contains two values, the first is the probability an adaptive walks through red and the second is the actual percentage of adaptive that walk through red.}
 \end{table}
-If we divide the average percentage of adaptive walking through red by their chance we can see how the chance corresponds to the actual measured value.
 
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
   Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
-  20\%  & 1.9 & 1.6 & 1.1 & 1.0  \\
-  40\%  & 2.4 & 2.4 & 1.7 & 1.4  \\
-  60\%  & 2.5 & 1.7 & 2.1 & 1.5  \\
-  80\%  & 3.3 & 2.8 & 1.6 & 1.6  \\
-  100\% & 4.5 & 1.8 & 3.3 & 2.4  \\
+  20\%  & 1.2 & 1.2 & 0.9 & 0.8  \\
+  40\%  & 1.4 & 1.5 & 1.2 & 1.0  \\
+  60\%  & 1.5 & 1.5 & 1.3 & 1.2  \\
+  80\%  & 1.5 & 1.7 & 1.4 & 1.4  \\
+  100\% & 1.9 & 1.8 & 1.6 & 1.5  \\
 \end{tabular}
-\caption{... }
+\end{table}
+
+\subsection{Results 50 pedestrians and 40 cars}
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 25.5 / 35.2 & 24.5 / 27.9 & 21.5 / 18.3 & 20.9 / 12.7  \\
+  40\%  & 25.8 / 30.6 & 20.5 / 30.2 & 16.8 / 18.9 & 16.0 / 13.3  \\
+  60\%  & 20.7 / 31.8 & 17.1 / 23.9 & 14.2 / 16.8 & 13.4 / 11.9  \\
+  80\%  & 21.5 / 31.2 & 14.3 / 21.4 & 12.2 / 17.2 & 11.5 / 11.0  \\
+  100\% & 17.6 / 32.2 & 12.8 / 25.4 & 11.1 / 18.2 & 10.8 / 10.7  \\
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 1.4 & 1.1 & 0.9 & 0.6  \\
+  40\%  & 1.2 & 1.5 & 1.1 & 0.8  \\
+  60\%  & 1.5 & 1.4 & 1.2 & 0.9  \\
+  80\%  & 1.5 & 1.5 & 1.4 & 1.0  \\
+  100\% & 1.8 & 2.0 & 1.6 & 1.0  \\
+\end{tabular}
+\end{table}
+
+\clearpage
+\subsection{Results 20 pedestrians and 80 cars}
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 26.0 / 29.9 & 26.8 / 22.6 & 21.9 / 19.9 & 22.3 / 14.0  \\
+  40\%  & 25.6 / 29.9 & 23.2 / 29.6 & 19.2 / 19.0 & 18.3 / 13.9  \\
+  60\%  & 22.8 / 31.1 & 15.4 / 25.0 & 16.3 / 18.2 & 12.9 / 13.2  \\
+  80\%  & 18.8 / 31.2 & 15.4 / 22.7 & 15.8 / 21.9 & 12.3 / 12.6  \\
+  100\% & 19.5 / 29.2 & 14.0 / 23.8 & 15.9 / 16.7 & 11.2 / 13.0  \\
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 1.2 & 0.8 & 0.9 & 0.6  \\
+  40\%  & 1.2 & 1.3 & 1.0 & 0.8  \\
+  60\%  & 1.4 & 1.6 & 1.1 & 1.0  \\
+  80\%  & 1.7 & 1.5 & 1.4 & 1.0  \\
+  100\% & 1.5 & 1.7 & 1.0 & 1.2  \\
+\end{tabular}
+\end{table}
+
+\subsection{Results 50 pedestrians and 80 cars}
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 27.4 / 30.7 & 23.3 / 23.3 & 20.0 / 17.5 & 20.5 / 11.1  \\
+  40\%  & 24.5 / 32.1 & 20.8 / 27.2 & 16.7 / 17.3 & 16.9 / 11.5  \\
+  60\%  & 20.7 / 24.4 & 15.7 / 21.6 & 15.5 / 16.6 & 13.2 / 10.2  \\
+  80\%  & 22.3 / 29.0 & 14.1 / 24.9 & 14.6 / 15.8 & 11.7 / 10.0  \\
+  100\% & 19.2 / 29.6 & 14.3 / 21.5 & 11.2 / 16.3 &  9.7 /  9.3  \\
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ l | c c c c }
+  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  \hline
+  20\%  & 1.1 & 1.0 & 0.9 & 0.5  \\
+  40\%  & 1.3 & 1.3 & 1.0 & 0.7  \\
+  60\%  & 1.2 & 1.4 & 1.1 & 0.8  \\
+  80\%  & 1.3 & 1.8 & 1.1 & 0.9  \\
+  100\% & 1.5 & 1.5 & 1.5 & 1.0  \\
+\end{tabular}
 \end{table}
 
 \clearpage
@@ -221,5 +302,11 @@ On the other hand, only increasing the police presence but not the effectiveness
 So increasing the fine results in a lower red walking chance, but leaves the actual percentage the same. Increasing the police presence lowers the actual percentage of red walking and leaves the chance roughly the same. One would assume that increasing both would result in the best possible outcome. But looking at the results that isn't the case...
 
 \clearpage
+
+\begin{thebibliography}{3}
+
+	%\bibitem{name} description
+
+\end{thebibliography}
 
 \end{document}
