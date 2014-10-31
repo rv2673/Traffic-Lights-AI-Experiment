@@ -16,21 +16,21 @@
 \begin{document}
 
 \maketitle
+
+\begin{abstract}
+	In this paper we describe a simulation of pedestrians crossing busy road. In particular, we study the effects of higher (or otherwise 'more effective') fines and higher police presence on the likelihood of people crossing the road when the pedestrian light is red. We aimed to incorporate the influence people have on each other. We found that [1-2 zinnen samenvatting van resultaten hier].
+\end{abstract}
+
 \clearpage
 \tableofcontents
 \clearpage
 
-\section{Introduction}
-Short introduction here.
-
-\clearpage
-
 \section{Existing model}
-The existing model for this social simulation was written in NetLogo. The goal of the simulation was to discover what the influence of police presence is on the number of red light walkers. The model was created while keeping the following three observations, with regards to red light crossing, in mind:
+The existing model for this social simulation was written in NetLogo. The goal of the simulation was to discover what the influence of police presence is on the number of red light walkers. In the model, pedestrians made their decision to run a red light based on the following factors:
 \begin{itemize}
-\item The peer pressure by other pedestrians
-\item The possible time gained by crossing a red light
-\item The probability of getting caught
+\item Pedestrians exert \textit{peer pressure} on other pedestrians,
+\item Pedestrians gain valuable time by crossing a red light,
+\item Pedestrians make a loss when they get caught.
 \end{itemize}
 
 \subsection{Design}
@@ -38,13 +38,7 @@ The world consist out of 33 by 33 patches and wraps around. A road with two traf
 
 \subsection{Simulation}
 \label{sec:initialsim}
-For the simulation, the following parameters were used for all experiments:
-\begin{itemize}
-\item Fine: $\$250$
-\item Pedestrians: $50$
-\item Pedestrian green time: $20$ ticks
-\end{itemize}
-As well as the following experiment-specific constraints:\\
+For the simulation, the following parameters were used for all experiments: The fine was set to $\$250$, the number of pedestrians to $50$ and the pedestrians' green time was $20$ ticks. Additionally, the following experiment-specific constraints were used:\\
 
 \begin{tabular}{ r | l | l }
   Exp. & Cars & Car green time (ticks) \\
@@ -79,16 +73,14 @@ We will reference these results in later chapters.
 \clearpage
 
 \section{Changes and their immediate effects}
-Changes made to the model, why, and how they directly  affected the simulation.
+In this section we summarize the changes we made to the model, why, and how they directly affected the simulation.
 
 \subsection{Viewing Distance}
-We introduced a 'viewing range' for agents, where they would only be able to look ahead a fixed amount of $patches$ (for cars).
-
-\subsubsection{Motivation}
-In the existing simulation, pedestrians would look ahead from their current y position to the y position of the traffic light (top right of the road). This meant different pedestrians looked at portions of the road at different sizes. For example, in figure \ref{ABlabel}, the pedestrian marked $A$ would only look ahead three patches, while the pedestrians marked $B$ would look ahead the entire road.
+We introduced a 'viewing range' for agents, where they would only be able to look ahead a fixed amount of $patches$ (for cars). In the existing simulation, pedestrians would look ahead from their current y position to the y position of the traffic light (top right of the road). This meant different pedestrians looked at portions of the road at different sizes. For example, in figure \ref{ABlabel}, the pedestrian marked $A$ would only look ahead three patches, while the pedestrians marked $B$ would look ahead the entire road.
 
 \begin{figure}[H]
 \centering
+\includegraphics[width=.75\textwidth]{socsim1.png}
 \caption{Visualization of the simulation.}
 \label{ABlabel}
 \end{figure}
@@ -97,10 +89,9 @@ If a pedestrian would spot cars on the portion of the road it was watching, it w
 
 Additionally, pedestrians standing close to the traffic light would only look ahead a few patches, not noticing cars that might be approaching just behind the traffic light.
 
-\subsubsection{Implementation}
+\subsubsection{Implementation and influences on the simulation}
 We rewrote the pedestrian's logic such that rather than looking ahead until the traffic light, it would look ahead a fixed number of patches. This 'viewing range would also wrap around the world, meaning the viewing range of pedestrians standing near the top of the road also covered part of the bottom of the road.
 
-\subsubsection{Influences on the simulation}
 The area between the bottom of the road and the traffic light was 24 patches high. Consequently, the average viewing range of a pedestrian was about 12 patches.
 
 To quantify the influence of this change on the simulation and its results, we set the viewing range to 8 (picked arbitrarily for testing), and ran the simulation with the exact same parameters as in chapter \ref{sec:initialsim}. The results were:
@@ -124,9 +115,8 @@ pedestrian walks through a red light.}
 The results for experiments 1 and 4, where no cars were on the road, did not change much, as expected. Interestingly, the results for experiments 2, 3, 5 and 6, when more cars were on the road, increased noticably. 
 
 \subsection{More advanced model}
-We adapted the movement logic of the pedestrians to arrive at the road spread out from each other and at varying y coordinates.
+We adapted the movement logic of the pedestrians to arrive at the in a more spread out fashion, rather than all at rougly the same time.
 
-\subsubsection{Motivation}
 When looking at the old model pedestrians would move across the world in a vertical band along the x-axis. This was countered by the slightly random movement speed of the pedestrians, but since the movement was evaluated each tick the resulting difference was minimal. Ultimately all the agents would arrive at the traffic light within a few ticks.
 
 The other aspect, varying the y-coordinate of the pedestrians, was needed to counter the same agent crossing an optimal spot multiple times. After implementing the viewing distance it became clear that crossing the road at the bottom was more profitable since it takes a while before the cars to enter the viewing range of the bottom most pedestrians when the cars' traffic light turns green.
@@ -136,14 +126,10 @@ Since it is important for this simulation to keep reusing the same agents, recre
 The implementation of the advanced model was done by creating a "waiting zone" in the world. The first column of patches are colored blue in the simulation to visualize this zone. Once a pedestrian enters this zone it will get a random number of ticks it has to wait and its y-coordinate is randomized.
 After the wait time is over the pedestrian will continue its normal movement routine.
 
-\subsubsection{Influences on the simulation}
-..
-
 \subsection{Counting methods}
-..
 
-\subsubsection{Motivation}
 Some of the figures extracted from the old simulation were meaningless. Many of the percentages were calculated by dividing the number of pedestrians that performed certain task, say walking through a red light, by the total number of pedestrians in the simulation. This was done without taking into account that some pedestrians weren't even near the road or that the counted pedestrians were already counted.
+
 This became an even bigger problem after the waiting zone was introduced. It allowed for an even bigger gap between the total number of people and the actual number of people crossing the road or near the road.
 
 \subsubsection{Implementation}
@@ -330,7 +316,7 @@ So increasing the fine results in a lower red walking chance, but leaves the act
 
 \begin{thebibliography}{3}
 
-	%\bibitem{name} description
+	\bibitem{name} description
 
 \end{thebibliography}
 
