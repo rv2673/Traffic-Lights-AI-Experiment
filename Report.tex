@@ -143,9 +143,9 @@ In the old model adaptives would cross when a certain treshold was reached and t
 
 The chance to cross at a certain moment is found by looking at the circumanstances and experiences from the past. Those influence the chance by increasing the chance in favor of one outcome. This way we can easily implement multiple factors that each influence the chance to cross in some way. 
 
-We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. This study ......$1$ looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. So we set the fine in effectiveness instead of a certain money value. 
+We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, and did not show that higher fines really did have greater effectiveness. As such, the fine in our model quantifies 'effectiveness in general', not actual cost in dollars. 
 
-We found that personal experience plays a big role in decision making, as is shown in ..$2$... The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
+We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
 
 \subsubsection{Implementation}
 
@@ -290,8 +290,12 @@ So increasing the fine results in a lower red walking chance, but leaves the act
 
 \begin{thebibliography}{3}
 
-	\bibitem{name} description
+	\bibitem{colbehaviour} Faria, Jolyon J., Stefan Krause, and Jens Krause. "Collective behavior in road crossing pedestrians: the role of social information." Behavioral ecology 21.6 (2010): 1236-1242.
 
+	\bibitem{drunkdrivers} Weatherburn, Don, and Steve Moffatt. "The specific deterrent effect of higher fines on drink-driving offenders." British journal of criminology 51.5 (2011): 789-803.
+    
+    \bibitem{movies} Haselhuhn, Michael P., et al. "The impact of personal experience on behavior: Evidence from video-rental fines." Management Science 58.1 (2012): 52-61.
+    
 \end{thebibliography}
 
 \end{document}
