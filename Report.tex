@@ -151,20 +151,45 @@ The implementation is done by counting the number of pedestrians per cycle and u
 
 
 \subsection{Crossing Chance}
-We changed the crossing behaviour of adaptive people to be based on chance instead of being based on a fixed treshold.
+We changed the crossing behaviour of adaptive people to be based on chance instead of being based on a fixed treshold. We also are more spohisticated way a fineinfluence behaviour, it not only effects the person that gets a fine, but also the people that see it happen and people that hear of it.
 
 \subsubsection{Motivation}
+
+\paragraph{Chance instead of treshold}
 In the old model adaptives would cross when a certain treshold was reached and there was no car approaching. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding with the height of the fine. However we found that this does not approximate human decison making very well. Decison are not always rational and based on fixed rules and values. To better approximate this decision of crossing at a red light we base our decsion making on chance instead of a fixed number. 
 
 The chance to cross at a certain moment is found by looking at the circumanstances and experiences from the past. Those influence the chance by increasing the chance in favor of one outcome. This way we can easily implement multiple factors that each influence the chance to cross in some way. 
 
-We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. This study ......$1$ looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. So we set the fine in effectiveness instead of a certain money value. 
+\paragraph{Influence of other people}
+In the old model adaptives looked at all the persons that crossed the road while it was red, if this number crossed a certain treshold they also would cross when there was no car approaching. However we found this study  ..$1$.. that that the people surrounding the person influences this decison more. So if a person is surrounded by people that do not cross he is less likely to cross himself and more likely to cross when they do. So we look at the near people for a person to influence his crossing chance, instead of at all the people. 
 
-We found that personal experience plays a big role in decision making, as is shown in ..$2$... The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
+\paragraph{Fine influence and experience}
+We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. This study for example ......$2$ looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. So we set the fine in effectiveness instead of a certain money value. 
+
+We found that personal experience plays a big role in decision making, as is shown in ..$3$... The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
 
 \subsubsection{Implementation}
+\paragraph{Chance}
+The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning and gives the standard recklessness of that person. The second variabele that gives the current chance after all the influences. The second variabele is in the beginning equal to the standard recklessness but is different after applying the influence factors.
 
-The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning 
+The influence factors however don't have a permanent effect, the current value returns to the orignal value. We implemented this through a fixed point iteration. We have the function f(x) = r * sin((x-v)) + v, where r is the factor determine show fast the value converges and v the value to which we converge. The smaller r is, the quicker the vaue converges. When we input the current chance in f we get new chance which is the input for the next iteration. This way the value converges to v. In the figure below the convergence:
+
+Add figure here.
+
+\paragraph{Fine influence and experience}
+When a person gets a fine is current chance is lowered by valued of multiplying his current chance and the fine effectiveness and the effectiveness factor of getting a fine. So if the fine is 100 percent effective, and getting factor is 1, his crossing chance is set to 0. That person gets also a label that he is fined.  The formula: chance = chance - ( chance * fine effectiveness * getting factor).
+
+After all the crossing people are fined we look at the people near the fined people that are not fined themselves or saw already someone getting fined this round, therefore the label. Those people get their chance lowered by the value obtained by mutliplying their chance by the fine effectiveness and the factor for seeing. They get the label that hey saw someone The formula: chance = chance - ( chance * fine effectiveness * seeing factor).
+
+After that if there were people fined, we select random people that did not get a fine or saw someone getting a fine, that heared from someoen getting a fine. Their crossing chance is lowered similiar to those of seeing and getting, but only multiplied by the hearing factor. These people get the label that they heared. The formula: chance = chance - ( chance * fine effectiveness * hearing factor).
+
+The labels are reset when the persons appear again on the left side. 
+
+\paragraph{Surrounding people influence}
+This influence is not permanent and has only influence this time crossing the light. This is implemented by calculating a tempory chance when we look if the person will cross. We look at every person near and check if they cross, if they do we add a postive factor to the list and if they don't a negative factor. Then we average the list to get the average influence factor. We set the resulting influence factor to zero if it is negative. We cap the factor because a crossing person has less effect on the behaviour of the peron we look at if the other people also don't follow, but this does not mean that a person is more likely to stay if his neighbours don't cross.
+
+\paragraph
+We cap the resulting chance after all calculations at maximal 1, because you can't have chance of more than 100 percent to do something. After calculating the chance we look if there's is no car approaching and if so we take a random float between 0 and 1 and the person decides to cross if that float is smaller or equal to the crossing chance. If the person decided to cross he moves on the road and crosses otherwise he stays where he is and we calculate again the next tick.
 
 \clearpage
 
