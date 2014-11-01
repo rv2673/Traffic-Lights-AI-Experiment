@@ -18,7 +18,7 @@
 \maketitle
 
 \begin{abstract}
-	In this paper we describe a simulation of pedestrians crossing busy road. In particular, we study the effects of higher (or otherwise 'more effective') fines and higher police presence on the likelihood of people crossing the road when the pedestrian light is red. We aimed to incorporate the influence people have on each other. We found that [1-2 zinnen samenvatting van resultaten hier].
+	In this paper we describe a simulation of pedestrians crossing a busy road. In particular, we study the effects of higher (or otherwise 'more effective') fines and higher police presence on the likelihood of people crossing the road when the pedestrian light is red. Our aim was to incorporate the influence people have on each other. We found that [1-2 zinnen samenvatting van resultaten hier].
 \end{abstract}
 
 \clearpage
@@ -26,7 +26,7 @@
 \clearpage
 
 \section{Existing model}
-The existing model for this social simulation was written in NetLogo. The goal of the simulation was to discover what the influence of police presence is on the number of red light walkers. In the model, pedestrians made their decision to run a red light based on the following factors:
+The existing model for this social simulation was written in NetLogo. The goal of the simulation was to discover what the influence of police presence is on the number of red light walkers. In the model, pedestrians made their decision to walk through a red light based on the following factors:
 \begin{itemize}
 \item Pedestrians exert \textit{peer pressure} on other pedestrians,
 \item Pedestrians gain valuable time by crossing a red light,
@@ -34,11 +34,13 @@ The existing model for this social simulation was written in NetLogo. The goal o
 \end{itemize}
 
 \subsection{Design}
-The world consist out of 33 by 33 patches and wraps around. A road with two traffic lights, one for the pedestrians and one for the cars, is located in this world. The pedestrians move horizontally through the world and due to the wrap around keep crossing the road. The cars on the other hand move along vertical axis over the Within the simulation there are two types of actors: pedestrians and cars. The cars only move down across the road 
+The world consists out of 33 by 33 patches and wraps around. A road with two traffic lights, one for the pedestrians and one for the cars, is located in this world. Within the simulation there are two types of agents: pedestrians and cars. The pedestrians move horizontally through the world and due to the wrap around keep crossing the road. The cars on the other hand move along the vertical axis. The intersection of the pedestrians and the cars forms the crossing place.
+
+Pedestrians are divided in three so called 'walker types'. The first one is the $cautious$ type. A cautious pedestrian will only cross the road if the traffic light is green and no car is approaching. The second walker type is the $reckless$ type. A reckless person will cross the road whenever it sees an opportunity, regardless of the traffic light. The final walker type is the $adaptive$ type. An adaptive person can either behave like a cautious person or a reckless person depending on its past experiences and the amount of profit the pedestrian expects to gain by walking through red.
 
 \subsection{Simulation}
 \label{sec:initialsim}
-For the simulation, the following parameters were used for all experiments: The fine was set to $\$250$, the number of pedestrians to $50$ and the pedestrians' green time was $20$ ticks. Additionally, the following experiment-specific constraints were used:\\
+For the simulation, the following parameters were used for all experiments: The fine was set to $\$250$, the number of pedestrians to $50$ and the pedestrians' green time was $20$ ticks. Additionally, the following experiment-specific parameters were used:\\
 
 \begin{tabular}{ r | l | l }
   Exp. & Cars & Car green time (ticks) \\
@@ -51,7 +53,7 @@ For the simulation, the following parameters were used for all experiments: The 
   6 & 50 & 20  \\
 \end{tabular}\\
 
-Running the simulation for $100 000$ ticks, the results were the following:
+Running the simulation for $100 000$ ticks, the results were as follows:
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
@@ -68,15 +70,13 @@ Running the simulation for $100 000$ ticks, the results were the following:
 pedestrian walks through a red light.}
 \end{table}
 
-We will reference these results in later chapters.
-
 \clearpage
 
 \section{Changes and their immediate effects}
-In this section we summarize the changes we made to the model, why, and how they directly affected the simulation.
+In this section we summarize the changes we made to the model, why, and how they affected the simulation.
 
 \subsection{Viewing Distance}
-We introduced a 'viewing range' for agents, where they would only be able to look ahead a fixed amount of $patches$ (for cars). In the existing simulation, pedestrians would look ahead from their current y position to the y position of the traffic light (top right of the road). This meant different pedestrians looked at portions of the road at different sizes. For example, in figure \ref{ABlabel}, the pedestrian marked $A$ would only look ahead three patches, while the pedestrians marked $B$ would look ahead the entire road.
+We introduced a 'viewing range' for agents, where they would only be able to look ahead a fixed amount of $patches$ for oncoming cars. In the existing simulation, pedestrians would look ahead from their current y position to the y position of the traffic light (top right of the road). This meant different pedestrians looked at bigger portions of the road than others. For example, in figure \ref{ABlabel}, the pedestrian marked $A$ would only look ahead three patches, while the pedestrians marked $B$ would look ahead the entire road.
 
 \begin{figure}[H]
 \centering
@@ -90,7 +90,7 @@ If a pedestrian would spot cars on the portion of the road it was watching, it w
 Additionally, pedestrians standing close to the traffic light would only look ahead a few patches, not noticing cars that might be approaching just behind the traffic light.
 
 \subsubsection{Implementation and influences on the simulation}
-We rewrote the pedestrian's logic such that rather than looking ahead until the traffic light, it would look ahead a fixed number of patches. This 'viewing range would also wrap around the world, meaning the viewing range of pedestrians standing near the top of the road also covered part of the bottom of the road.
+The pedestrian's logic was rewritten to look ahead a fixed number of patches rather than looking ahead until the traffic light. This 'viewing range' would also wrap around the world, meaning the viewing range of pedestrians standing near the top of the road also covered part of the bottom of the road. This ensures that all pedestrians regardless of their vertical position in the world observed an equally sized portion of the road.
 
 The area between the bottom of the road and the traffic light was 24 patches high. Consequently, the average viewing range of a pedestrian was about 12 patches.
 
@@ -115,20 +115,19 @@ pedestrian walks through a red light.}
 The results for experiments 1 and 4, where no cars were on the road, did not change much, as expected. Interestingly, the results for experiments 2, 3, 5 and 6, when more cars were on the road, increased noticably. 
 
 \subsection{More advanced model}
-We adapted the movement logic of the pedestrians to arrive at the in a more spread out fashion, rather than all at rougly the same time.
+The movement logic of the pedestrians was adapted to arrive at the road in a more spread out fashion, rather than all at rougly the same moment.
 
-When looking at the old model pedestrians would move across the world in a vertical band along the x-axis. This was countered by the slightly random movement speed of the pedestrians, but since the movement was evaluated each tick the resulting difference was minimal. Ultimately all the agents would arrive at the traffic light within a few ticks.
+When looking at the old model pedestrians would move across the world in a vertical band along the x-axis all clustered together. This was countered by the slightly random movement speed of the pedestrians, but since the movement was evaluated each tick the resulting difference was minimal. Ultimately all the agents would arrive at the traffic light within a few ticks of each other.
 
-The other aspect, varying the y-coordinate of the pedestrians, was needed to counter the same agent crossing an optimal spot multiple times. After implementing the viewing distance it became clear that crossing the road at the bottom was more profitable since it takes a while before the cars to enter the viewing range of the bottom most pedestrians when the cars' traffic light turns green.
-Since it is important for this simulation to keep reusing the same agents, recreating pedestrians anew wasn't an option.
+Another aspect that was changed was the constant y-coordinate of the pedestrians. During a simulations the pedestrians would remain on the same vertical coordinate. Varying this was needed to counter the same agent crossing an optimal spot multiple times. After implementing the viewing distance it became clear that crossing the road at the bottom was more profitable since it takes a while before the cars to enter the viewing range of the bottom most pedestrians when the cars' traffic light turns green.
+Since it is important for this simulation to reuse the same agents, recreating pedestrians anew wasn't an option.
 
 \subsubsection{Implementation}
 The implementation of the advanced model was done by creating a "waiting zone" in the world. The first column of patches are colored blue in the simulation to visualize this zone. Once a pedestrian enters this zone it will get a random number of ticks it has to wait and its y-coordinate is randomized.
 After the wait time is over the pedestrian will continue its normal movement routine.
 
 \subsection{Counting methods}
-
-Some of the figures extracted from the old simulation were meaningless. Many of the percentages were calculated by dividing the number of pedestrians that performed certain task, say walking through a red light, by the total number of pedestrians in the simulation. This was done without taking into account that some pedestrians weren't even near the road or that the counted pedestrians were already counted.
+Some of the figures extracted from the old simulation were meaningless. Many of the percentages were calculated by dividing the number of pedestrians that performed a certain task, say walking through a red light, by the total number of pedestrians in the simulation. This was done without taking into account that some pedestrians weren't even near the road or that the counted pedestrians were already counted.
 
 This became an even bigger problem after the waiting zone was introduced. It allowed for an even bigger gap between the total number of people and the actual number of people crossing the road or near the road.
 
@@ -137,19 +136,19 @@ The implementation is done by counting the number of pedestrians per cycle and u
 
 
 \subsection{Crossing Chance}
-We changed the crossing behaviour of adaptive people to be based on chance instead of being based on a fixed treshold.
+The crossing behaviour of adaptive people was changed to be based on chance instead of being based on a fixed treshold.
 
-In the old model adaptives would cross when a certain treshold was reached and there was no car approaching. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding with the height of the fine. However we found that this does not approximate human decison making very well. Decison are not always rational and based on fixed rules and values. To better approximate this decision of crossing at a red light we base our decsion making on chance instead of a fixed number. 
+In the old model adaptive pedestrians would cross when there was no car approaching and a certain treshold was reached. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding to the height of the fine. However we believe that this does not approximate human decison making very well. Decisons are not always rational and based on fixed rules and values. To better approximate the decision whether or not to cross the road at a red light we use a probability. 
 
-The chance to cross at a certain moment is found by looking at the circumanstances and experiences from the past. Those influence the chance by increasing the chance in favor of one outcome. This way we can easily implement multiple factors that each influence the chance to cross in some way. 
+The chance to cross at a certain moment is found by looking at past experiences and circumstancial factors, so called push and pull factors. Those influence either increasing or decreasing the probability a pedestrian would cross. This implementation allows multiple factors to be easily added to the model.
 
-We wanted to look at how a fine effects the people's behaviour, but since we could not find any studies that showed that there was a clear correlation between the height of the fine and its effect. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, and did not show that higher fines really did have greater effectiveness. As such, the fine in our model quantifies 'effectiveness in general', not actual cost in dollars. 
+One thing we wanted to look at was how a fine effects the people's behaviour. There are studies that researched the correlation between the height of a fine and its effect, but they don't show a clear correlation and contradiction conclusions can be found. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. To avoid this we set the fine in $effectiveness$ instead of a certain money value and leave the implementation of the fine out of the model. 
 
-We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting a fine yourself, but also seeing and hearing of something is an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time back and the chance goes back to its original value.
+We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting fined, but seeing and hearing about it is also an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time and the chance goes back to its original value.
 
 \subsubsection{Implementation}
 
-The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning 
+The way we implemented our new model for crossing is by replacing the cooldown value of the existing model by two new variables. The first variable which is set randomly at the beginning 
 
 \clearpage
 
@@ -169,10 +168,12 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 
 \clearpage
 \subsection{Results 20 pedestrians and 40 cars}
+In this simulation the number of pedestrians and the number of cars are kept low. This means that the influence pedestrians have on each other will have less effect. Also there are more openings in the oncoming car traffic for pedestrians to cross the road.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 30.2 / 37.0 & 22.1 / 25.9 & 20.9 / 19.3 & 21.1 / 16.7  \\
   40\%  & 22.0 / 31.1 & 18.0 / 26.3 & 17.7 / 20.7 & 17.3 / 16.5  \\
@@ -185,7 +186,7 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 1.2 & 1.2 & 0.9 & 0.8  \\
   40\%  & 1.4 & 1.5 & 1.2 & 1.0  \\
@@ -196,10 +197,12 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \end{table}
 
 \subsection{Results 50 pedestrians and 40 cars}
+In this simulation the number of pedestrians is increased.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 25.5 / 35.2 & 24.5 / 27.9 & 21.5 / 18.3 & 20.9 / 12.7  \\
   40\%  & 25.8 / 30.6 & 20.5 / 30.2 & 16.8 / 18.9 & 16.0 / 13.3  \\
@@ -212,7 +215,7 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 1.4 & 1.1 & 0.9 & 0.6  \\
   40\%  & 1.2 & 1.5 & 1.1 & 0.8  \\
@@ -224,10 +227,12 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 
 \clearpage
 \subsection{Results 20 pedestrians and 80 cars}
+In this simulation the number of pedestrians is kept low while the number of cars is increased. During the cars' green time there will be less gaps for the pedestrians to slip through. This means the most likely moment for them to walk through red is at the start of the pedestrians' red light.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 26.0 / 29.9 & 26.8 / 22.6 & 21.9 / 19.9 & 22.3 / 14.0  \\
   40\%  & 25.6 / 29.9 & 23.2 / 29.6 & 19.2 / 19.0 & 18.3 / 13.9  \\
@@ -240,7 +245,7 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 1.2 & 0.8 & 0.9 & 0.6  \\
   40\%  & 1.2 & 1.3 & 1.0 & 0.8  \\
@@ -251,10 +256,12 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \end{table}
 
 \subsection{Results 50 pedestrians and 80 cars}
+In this simulation both the number of pedestrians and the number of cars are high. This simulation represents a busy road, both for cars and pedestrians.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 27.4 / 30.7 & 23.3 / 23.3 & 20.0 / 17.5 & 20.5 / 11.1  \\
   40\%  & 24.5 / 32.1 & 20.8 / 27.2 & 16.7 / 17.3 & 16.9 / 11.5  \\
@@ -267,7 +274,7 @@ Each simulation will be run for $10000$ ticks. At the end the average percentage
 \begin{table}[H]
 \centering
 \begin{tabular}{ l | c c c c }
-  Fine \slash Police Prob. & 25\% & 50\% & 75\% & 100\% \\ 
+  Fine\slash Prob. & 25\% & 50\% & 75\% & 100\% \\ 
   \hline
   20\%  & 1.1 & 1.0 & 0.9 & 0.5  \\
   40\%  & 1.3 & 1.3 & 1.0 & 0.7  \\
