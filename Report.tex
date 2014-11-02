@@ -162,13 +162,15 @@ The figures we are interested in are the actual amount of adaptive pedestrians t
 \item Seeing weight: 0.4
 \item Hearing weight: 0.1
 \end{itemize}
-These values aren't based on any real world values, but turned out to exhibit behaviour that allows all implemented features to be used. If the pedestrians' light is red there are still gaps in the approaching cars for pedestrians to cross the road. Furthermore there are moments that only a few pedestrians are next to road and moments there are plenty allowing both influenced and uninfluenced probabilities of crossing. 
+These values aren't based on any real world values, but turned out to exhibit behaviour that allows all implemented features to be used.
 
-Each simulation will be run for $10000$ ticks. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$. These twenty experiments are repeated for different number of pedestrians and number of cars. These will vary from high and low where high is 50 for pedestrian and 80 for cars, low is 20 for pedestrians and 40 for cars.
+Each simulation will be run three times for $10000$ ticks each. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$. These twenty experiments are repeated for different configurations; number of pedestrians and number of cars. These will vary from high and low where high is 50 for pedestrian and 80 for cars, low is 20 for pedestrians and 40 for cars.
+
+In each result section there's a second table which shows the ratio between the actual percentage of adaptive that walk through red and the probability of them walking through red. A ratio of 1.0 is expected when the adaptives are fully uninfluenced by other pedestrians and cars.
 
 \clearpage
 \subsection{Results 20 pedestrians and 40 cars}
-In this simulation the number of pedestrians and the number of cars are kept low. This means that the influence pedestrians have on each other will have less effect. Also there are more openings in the oncoming car traffic for pedestrians to cross the road.
+In this configuration the number of pedestrians and the number of cars are kept low. This means that the pedestrians will influence each other less. The lower amount of cars allows for more openings in the oncoming car traffic for pedestrians to cross the road.
 
 \begin{table}[H]
 \centering
@@ -197,7 +199,7 @@ In this simulation the number of pedestrians and the number of cars are kept low
 \end{table}
 
 \subsection{Results 50 pedestrians and 40 cars}
-In this simulation the number of pedestrians is increased.
+In this configuration the number of pedestrians is increased. It is expected that the pedestrians will influence each other more.
 
 \begin{table}[H]
 \centering
@@ -227,7 +229,7 @@ In this simulation the number of pedestrians is increased.
 
 \clearpage
 \subsection{Results 20 pedestrians and 80 cars}
-In this simulation the number of pedestrians is kept low while the number of cars is increased. During the cars' green time there will be less gaps for the pedestrians to slip through. This means the most likely moment for them to walk through red is at the start of the pedestrians' red light.
+In this simulation the number of pedestrians is kept low while the number of cars is increased. During the cars' green time there will be less gaps for the pedestrians to slip through. This means that the most likely moment for them to walk through red is at the start of the pedestrians' red light.
 
 \begin{table}[H]
 \centering
@@ -287,11 +289,20 @@ In this simulation both the number of pedestrians and the number of cars are hig
 \clearpage
 
 \section{Conclusion}
-When looking at the result it becomes clear that increasing the effectiveness without increasing the police presence will reduce the chance of adaptive walking through red, but the actual percentage of those adaptive walking through red stays roughly the same. This is most likely due to peer pressure. Since getting caught is unlikely, but once you get caught it is effective, the probability will vary greatly among the adaptive. When an adaptive with a high probability walks through red it will increase the chance of all adaptives to do the same. An adaptive with an average probability crosses the road due to the first one and gives a boots to the other adaptive with a lower probability.
+When looking at the results of the four configuration we see a pattern emerging. Increasing the effectiveness without increasing the police presence will reduce the chance of adaptive walking through red, but the actual percentage of those adaptive walking through red stays roughly the same. This is most likely due to peer pressure. Since getting caught is unlikely, but once you get caught it is effective, the probability will vary greatly among the adaptive. When an adaptive with a high probability walks through red it will increase the chance of all adaptives to do the same. An adaptive with an average probability crosses the road due to the first one and gives a boots to the other adaptive with a lower probability.
 
 On the other hand, only increasing the police presence but not the effectiveness of the fine will bring the actual percentage of adaptive crossing closer to the average probability of the adaptive crossing. The probability of the adaptive crossing falls slightly when increasing the presence.
 
-So increasing the fine results in a lower red walking chance, but leaves the actual percentage the same. Increasing the police presence lowers the actual percentage of red walking and leaves the chance roughly the same. One would assume that increasing both would result in the best possible outcome. But looking at the results that isn't the case...
+So increasing the fine results in a lower red walking chance, but leaves the actual percentage the same. Increasing the police presence lowers the actual percentage of red walking and leaves the chance roughly the same. One would assume that increasing both would result in the best possible outcome. But looking at the results that isn't fully the case. Although the lowest percentage of red walking adaptive is achieved by high police presence and an effective fine, it's only slightly lower than high police presence and a low fine. This becomes clear when looking at the ratio table in the result sections. The lowest ratio, meaning less red walking adaptive than expected by their probability, is obtained by 100\% police presence probability and 20\% fine effectiveness.
+
+\subsection{Increasing the pedestrian count}
+The four different configuration share the same pattern with regards to the correlation between the adaptive red walkers and the values for police presence and fine effectiveness. There are however still differences between the different configurations. When comparing the results of the configuration with 20 pedestrians and 40 cars with the results of the configuration with 50 pedestrians and 40 cars we see that the percentages are lower for higher police presences. The 25\% and 50\% runs are quite similar, but it gets interseting when looking at the 75\% and 100\% columns. The higher the police presence the more the two configurations diverge. The higher pedestrian count causes less adaptive red walking.
+
+Examining this in the simulation it seems to be due to the fact that it is more likely to stand next to other pedestrians. Whenever someone gets fined a larger portion of the waiting pedestrians will remain waiting for the traffic light. This results in a positive influence for arriving pedestrians which will join the waiting mass rather than cross the road.
+
+\subsection{Increasing the number of cars}
+Interestingly increasing the number of cars only seem to result in a lower percentage of adaptive that walk through red. This seems unrelated to the effectiveness of the fine or the presence of the police. As expected the higher the number of cars the busier the road and thus less gaps for red walkers. Looking at configurations with 40 cars and 80 cars in NetLogo it becomes clear that the largest portion of red walkers do so in the first few ticks after the light turns red. It takes a few ticks for the cars' traffic light to turn green and for the cars to reach the viewing range of the pedestrians. Increasing or decreasing the number of cars has no influence on this and it is this timewindow that the majority of the red walking occurs.
+
 
 \clearpage
 
@@ -301,7 +312,7 @@ So increasing the fine results in a lower red walking chance, but leaves the act
 
 	\bibitem{drunkdrivers} Weatherburn, Don, and Steve Moffatt. "The specific deterrent effect of higher fines on drink-driving offenders." British journal of criminology 51.5 (2011): 789-803.
     
-    \bibitem{movies} Haselhuhn, Michael P., et al. "The impact of personal experience on behavior: Evidence from video-rental fines." Management Science 58.1 (2012): 52-61.
+	\bibitem{movies} Haselhuhn, Michael P., et al. "The impact of personal experience on behavior: Evidence from video-rental fines." Management Science 58.1 (2012): 52-61.
     
 	\bibitem{crossing} Rosenbloom, Tova. "Crossing at a red light: Behaviour of individuals and groups." Transportation research part F: traffic psychology and behaviour 12.5 (2009): 389-394.
 	
