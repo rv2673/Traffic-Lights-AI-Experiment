@@ -18,7 +18,7 @@
 \maketitle
 
 \begin{abstract}
-	In this paper we describe a simulation of pedestrians crossing a busy road. In particular, we study the effects of higher (or otherwise 'more effective') fines and higher police presence on the likelihood of people crossing the road when the pedestrian light is red. Our aim was to incorporate the influence people have on each other. We found that [1-2 zinnen samenvatting van resultaten hier].
+	In this paper we describe a simulation of pedestrians crossing a busy road. In particular, we study the effects of higher (or otherwise 'more effective') fines and higher police presence on the likelihood of people crossing the road when the pedestrian light is red. Our aim was to incorporate the influence people have on each other. We found that increasing the police presence is the most effective way to reduce red walking regardless whether it's a busy road or not. Increasing the fine on the other has a minimal effect on the actual amount of red walking.
 \end{abstract}
 
 \clearpage
@@ -325,6 +325,14 @@ Examining this in the simulation it seems to be due to the fact that it is more 
 \subsection{Increasing the number of cars}
 Interestingly increasing the number of cars only seem to result in a lower percentage of adaptive that walk through red. This seems unrelated to the effectiveness of the fine or the presence of the police. As expected the higher the number of cars the busier the road and thus less gaps for red walkers. Looking at configurations with 40 cars and 80 cars in NetLogo it becomes clear that the largest portion of red walkers do so in the first few ticks after the light turns red. It takes a few ticks for the cars' traffic light to turn green and for the cars to reach the viewing range of the pedestrians. Increasing or decreasing the number of cars has no influence on this and it is this timewindow that the majority of the red walking occurs.
 
+\clearpage
+
+\section{Discussion}
+We extended the model to solve some shortcomings present in the existing model. In our opinion the model is closer to the behaviour we experience ourselves in real life, but there are still many aspects that could be improved on.
+
+In our model the fine is expressed in effectiveness. This makes it easier to work with, but is harder to translate to reality. Fines are commonly an amount of money. Increasing the fine may not necessarily lead to a more effective fine. The correlation between the height and the effectiveness could even differ between cultures.
+
+The adapted counting method allows us to correctly calculate percentages within a cycle. The downside is that we can't ensure certain properties for that cycle. In the existing model the population would be composed of 20\% caution, 60\% adaptive and 20\% reckless. Due to our counting method pedestrians can be counted multiple times. Furthurmore the more a pedestrians walks through red the higher the chance is they will be counted again in the same cycle. The resulting percentages within that cycle can therefor vary during the simulation. If red walking is effective the red walking types (reckless and adaptive) will be present in higher percentage. The exact effects on the result aren't clear to us and would require more experiments or a model that does not exhibit this behaviour.
 
 \clearpage
 
