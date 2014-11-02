@@ -143,34 +143,46 @@ In the old model adaptive pedestrians would cross when there was no car approach
 The chance to cross at a certain moment is found by looking at past experiences and circumstantial factors, so called push and pull factors. Those influence either increasing or decreasing the probability a pedestrian would cross. This implementation allows multiple factors to be easily added to the model.
 
 
-One thing we wanted to look at was how a fine effects the people's behaviour. There are studies that researched the correlation between the height of a fine and its effect, but they don't show a clear correlation and contradiction conclusions can be found. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. To avoid this we set the fine in $effectiveness$ instead of a certain money value and leave the implementation of the fine out of the model. 
+One thing we wanted to look at was how a fine effects the people's behaviour. There are studies that researched the correlation between the height of a fine and its effect, but they don't show a clear correlation and contradicting conclusions can be found. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. To avoid this we set the fine in $effectiveness$ instead of a certain money value and leave the implementation of the fine out of the model. 
 
-We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminishes over time. But experience is not only experiencing something yourself, like getting fined, but seeing and hearing about it is also an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decision of the adaptives, the effect however diminishes over time and the chance goes back to its original value.
+We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminishes over time. But experience is not only experiencing something yourself, like getting fined, but seeing and hearing about it is also an experience. Although the forms may convey the same information they do not have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decision of the adaptives, the effect however diminishes over time and the chance goes back to its original value.
 
 
 \subsubsection{Implementation}
 \paragraph{Chance}
 The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning and gives the standard recklessness of that person. The second variable that gives the current chance after all the influences. The second variable is in the beginning equal to the standard recklessness but is different after applying the influence factors.
 
-The influence factors however don't have a permanent effect, the current value returns to the original value. We implemented this through a fixed point iteration. We have the function f(x) = r * sin((x-v)) + v, where r is the factor determine show fast the value converges and v the value to which we converge. The smaller r is, the quicker the value converges. When we input the current chance in f we get new chance which is the input for the next iteration. This way the value converges to v. In the figure below the convergence:
+The influence factors however don't have a permanent effect, the current value returns to the original value. We implemented this through a fixed point iteration. We have the function f(x) = r * sin((x-v)) + v, where r is the factor that determines how fast the value converges and v the value to which we converge. The smaller r is, the quicker the value converges. When we input the current chance in f we get new chance which is the input for the next iteration. This way the value converges to v. In the figures below the convergence is shown for a value x with r= 0.5 and r = 0.8 respectively:
 
-Add figure here.
+\begin{figure}[H]
+\centering
+\includegraphics[width=.9\textwidth]{iteration1.png}
+\caption{Convergence of x = 0.05 to v = 0.7 with r = 0.5.}
+\label{ABlabel}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.9\textwidth]{iteration2.png}
+\caption{Convergence of x = 0.05 to v = 0.7 with r = 0.8.}
+\label{ABlabel}
+\end{figure}
 
 \paragraph{Fine influence and experience}
-When a person gets a fine is current chance is lowered by valued of multiplying his current chance and the fine effectiveness and the effectiveness factor of getting a fine. So if the fine is 100 percent effective, and getting factor is 1, his crossing chance is set to 0. That person gets also a label that he is fined.  The formula: chance = chance - ( chance * fine effectiveness * getting factor).
+When a person gets a fine its current chance is lowered by the value you get by multiplying the current chance and the fine effectiveness and the effectiveness factor of getting a fine. So if the fine is 100 percent effective, and getting factor is 1, his crossing chance is set to 0. That person also gets a label that he is fined.  The formula: chance = chance - ( chance * fine effectiveness * getting factor).
 
-After all the crossing people are fined we look at the people near the fined people that are not fined themselves or saw already someone getting fined this round, therefore the label. Those people get their chance lowered by the value obtained by mutliplying their chance by the fine effectiveness and the factor for seeing. They get the label that hey saw someone The formula: chance = chance - ( chance * fine effectiveness * seeing factor).
+After all the red light crossers are fined we look at the people near those fined people that did not get a fine themselves or already saw someone getting fined this round, therefore the label. Those people get their chance lowered by the value obtained by mutliplying their chance by the fine effectiveness and the factor for seeing. They get the label that they saw someone getting fined. The formula: chance = chance - ( chance * fine effectiveness * seeing factor).
 
-After that if there were people fined, we select random people that did not get a fine or saw someone getting a fine, that heared from someoen getting a fine. Their crossing chance is lowered similiar to those of seeing and getting, but only multiplied by the hearing factor. These people get the label that they heared. The formula: chance = chance - ( chance * fine effectiveness * hearing factor).
+After that if there were people who got a fine, we select random people that did not get a fine or saw someone getting a fine, that heared from someone getting a fine. Their crossing chance is lowered similiar to those of seeing and getting, but only multiplied by the hearing factor. These people get the label that they heared soemone gettign a fine. The formula: chance = chance - ( chance * fine effectiveness * hearing factor).
 
-The labels are reset when the persons appear again on the left side. 
+The labels are reset when the persons appear again on the left side of the world. 
 
 \paragraph{Surrounding people influence}
 This influence is not permanent and has only influence this time crossing the light. This is implemented by calculating a tempory chance when we look if the person will cross. We look at every person near and check if they cross, if they do we add a postive factor to the list and if they don't a negative factor. Then we average the list to get the average influence factor. We set the resulting influence factor to zero if it is negative. We cap the factor because a crossing person has less effect on the behaviour of the peron we look at if the other people also don't follow, but this does not mean that a person is more likely to stay if his neighbours don't cross.
 
 
 \paragraph{Crossing decision}
-We cap the resulting chance after all calculations at maximal 1, because you can't have chance of more than 100 percent to do something. After calculating the chance we look if there's is no car approaching and if so we take a random float between 0 and 1 and the person decides to cross if that float is smaller or equal to the crossing chance. If the person decided to cross he moves on the road and crosses otherwise he stays where he is and we calculate again the next tick.
+We cap the resulting chance after all calculations at 1, because you can't have chance of more than 100 percent to do something. After calculating the chance we look if there's is no car approaching. If that's the case we take a random float between 0 and 1 and the person decides to cross if that float is smaller or equal to the crossing chance. If the person decided to cross he moves on the road and crosses, otherwise he stays where he is and we calculate again the next tick.
 
 \clearpage
 
@@ -186,7 +198,7 @@ The figures we are interested in are the actual amount of adaptive pedestrians t
 \end{itemize}
 These values aren't based on any real world values, but turned out to exhibit behaviour that allows all implemented features to be used.
 
-Each simulation will be run three times for $10000$ ticks each. At the end the average percentage of adaptive walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$. These twenty experiments are repeated for different configurations; number of pedestrians and number of cars. These will vary from high and low where high is 50 for pedestrian and 80 for cars, low is 20 for pedestrians and 40 for cars.
+Each simulation will be run three times for $10000$ ticks each. At the end the average percentage of adaptives walking through a red light and the average probability of the adaptive are recorded. The variables that are varied during the experiments are the police appearance probability and the effectiveness of the fine. For the police probability the values $25$, $50$, $75$ and $100$ will be chosen and for the fine $20$, $40$, $60$, $80$ and $100$. These twenty experiments are repeated for different configurations; number of pedestrians and number of cars. These will vary from high and low where high is 50 for pedestrian and 80 for cars, low is 20 for pedestrians and 40 for cars.
 
 In each result section there's a second table which shows the ratio between the actual percentage of adaptive that walk through red and the probability of them walking through red. A ratio of 1.0 is expected when the adaptives are fully uninfluenced by other pedestrians and cars.
 
@@ -311,14 +323,14 @@ In this simulation both the number of pedestrians and the number of cars are hig
 \clearpage
 
 \section{Conclusion}
-When looking at the results of the four configuration we see a pattern emerging. Increasing the effectiveness without increasing the police presence will reduce the chance of adaptive walking through red, but the actual percentage of those adaptive walking through red stays roughly the same. This is most likely due to peer pressure. Since getting caught is unlikely, but once you get caught it is effective, the probability will vary greatly among the adaptive. When an adaptive with a high probability walks through red it will increase the chance of all adaptives to do the same. An adaptive with an average probability crosses the road due to the first one and gives a boots to the other adaptive with a lower probability.
+When looking at the results of the four configuration we see a pattern emerging. Increasing the effectiveness without increasing the police presence will reduce the chance of adaptive walking through red, but the actual percentage of those adaptive walking through red stays roughly the same. This is most likely due to peer pressure. Since getting caught is unlikely, but once you get caught it is effective, the probability will vary greatly among the adaptive. When an adaptive with a high probability walks through red it will increase the chance of all adaptives to do the same. An adaptive with an average probability crosses the road due to the first one and gives a boost to the other adaptive with a lower probability.
 
 On the other hand, only increasing the police presence but not the effectiveness of the fine will bring the actual percentage of adaptive crossing closer to the average probability of the adaptive crossing. The probability of the adaptive crossing falls slightly when increasing the presence.
 
 So increasing the fine results in a lower red walking chance, but leaves the actual percentage the same. Increasing the police presence lowers the actual percentage of red walking and leaves the chance roughly the same. One would assume that increasing both would result in the best possible outcome. But looking at the results that isn't fully the case. Although the lowest percentage of red walking adaptive is achieved by high police presence and an effective fine, it's only slightly lower than high police presence and a low fine. This becomes clear when looking at the ratio table in the result sections. The lowest ratio, meaning less red walking adaptive than expected by their probability, is obtained by 100\% police presence probability and 20\% fine effectiveness.
 
 \subsection{Increasing the pedestrian count}
-The four different configuration share the same pattern with regards to the correlation between the adaptive red walkers and the values for police presence and fine effectiveness. There are however still differences between the different configurations. When comparing the results of the configuration with 20 pedestrians and 40 cars with the results of the configuration with 50 pedestrians and 40 cars we see that the percentages are lower for higher police presences. The 25\% and 50\% runs are quite similar, but it gets interseting when looking at the 75\% and 100\% columns. The higher the police presence the more the two configurations diverge. The higher pedestrian count causes less adaptive red walking.
+The four different configuration share the same pattern with regards to the correlation between the adaptive red walkers and the values for police presence and fine effectiveness. There are however still differences between the different configurations. When comparing the results of the configuration with 20 pedestrians and 40 cars with the results of the configuration with 50 pedestrians and 40 cars we see that the percentages are lower for higher police presences. The 25\% and 50\% runs are quite similar, but it gets interesting when looking at the 75\% and 100\% columns. The higher the police presence the more the two configurations diverge. The higher pedestrian count causes less adaptive red walking.
 
 Examining this in the simulation it seems to be due to the fact that it is more likely to stand next to other pedestrians. Whenever someone gets fined a larger portion of the waiting pedestrians will remain waiting for the traffic light. This results in a positive influence for arriving pedestrians which will join the waiting mass rather than cross the road.
 
