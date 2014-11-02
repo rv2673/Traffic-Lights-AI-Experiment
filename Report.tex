@@ -115,7 +115,7 @@ pedestrian walks through a red light.}
 The results for experiments 1 and 4, where no cars were on the road, did not change much, as expected. Interestingly, the results for experiments 2, 3, 5 and 6, when more cars were on the road, increased noticably. 
 
 \subsection{More advanced model}
-The movement logic of the pedestrians was adapted to arrive at the road in a more spread out fashion, rather than all at rougly the same moment.
+The movement logic of the pedestrians was adapted to arrive at the road in a more spread out fashion, rather than all at roughly the same moment.
 
 When looking at the old model pedestrians would move across the world in a vertical band along the x-axis all clustered together. This was countered by the slightly random movement speed of the pedestrians, but since the movement was evaluated each tick the resulting difference was minimal. Ultimately all the agents would arrive at the traffic light within a few ticks of each other.
 
@@ -123,7 +123,7 @@ Another aspect that was changed was the constant y-coordinate of the pedestrians
 Since it is important for this simulation to reuse the same agents, recreating pedestrians anew wasn't an option.
 
 \subsubsection{Implementation}
-The implementation of the advanced model was done by creating a "waiting zone" in the world. The first column of patches are colored blue in the simulation to visualize this zone. Once a pedestrian enters this zone it will get a random number of ticks it has to wait and its y-coordinate is randomized.
+The implementation of the advanced model was done by creating a "waiting zone" in the world. The first column of patches are coloured blue in the simulation to visualize this zone. Once a pedestrian enters this zone it will get a random number of ticks it has to wait and its y-coordinate is randomized.
 After the wait time is over the pedestrian will continue its normal movement routine.
 
 \subsection{Counting methods}
@@ -136,19 +136,41 @@ The implementation is done by counting the number of pedestrians per cycle and u
 
 
 \subsection{Crossing Chance}
-The crossing behaviour of adaptive people was changed to be based on chance instead of being based on a fixed treshold.
+The crossing behaviour of adaptive people was changed to be based on chance instead of being based on a fixed threshold.
 
-In the old model adaptive pedestrians would cross when there was no car approaching and a certain treshold was reached. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding to the height of the fine. However we believe that this does not approximate human decison making very well. Decisons are not always rational and based on fixed rules and values. To better approximate the decision whether or not to cross the road at a red light we use a probability. 
+In the old model adaptive pedestrians would cross when there was no car approaching and a certain threshold was reached. The effect of the police enforcement was determined by the value of the fine. Fined people would not cross at a red light for a certain amount of ticks corresponding to the height of the fine. However we believe that this does not approximate human decision making very well. Decisions are not always rational and based on fixed rules and values. To better approximate the decision whether or not to cross the road at a red light we use a probability. 
 
-The chance to cross at a certain moment is found by looking at past experiences and circumstancial factors, so called push and pull factors. Those influence either increasing or decreasing the probability a pedestrian would cross. This implementation allows multiple factors to be easily added to the model.
+The chance to cross at a certain moment is found by looking at past experiences and circumstantial factors, so called push and pull factors. Those influence either increasing or decreasing the probability a pedestrian would cross. This implementation allows multiple factors to be easily added to the model.
+
 
 One thing we wanted to look at was how a fine effects the people's behaviour. There are studies that researched the correlation between the height of a fine and its effect, but they don't show a clear correlation and contradiction conclusions can be found. A 2010 study by Jolyon J. Faria, Stefan Krause, and Jens Krausec (\cite{drunkdrivers}) looked at the the effects of a higher fine on drunk driving incidents, did not show that higher fines really did have greater effectiveness. To avoid this we set the fine in $effectiveness$ instead of a certain money value and leave the implementation of the fine out of the model. 
 
-We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminshes over time. But experience is not only experiencing something yourself, like getting fined, but seeing and hearing about it is also an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decison of the adaptives, the effect however diminisches over time and the chance goes back to its original value.
+We found that personal experience plays a big role in decision making, as displayed in a 2011 paper by Don Weatherburn and Steve Moffatt (\cite{movies}). The paper shows that personal experience of getting a fine for returning a rented movie to late, effects the chance of bringing it late again the next time. The effect of the experience however diminishes over time. But experience is not only experiencing something yourself, like getting fined, but seeing and hearing about it is also an experience. Although the forms may convey the same information they do no have the same effect on a decision is remarked it the paper. That's why we implemented the three forms to effect the decision of the adaptives, the effect however diminishes over time and the chance goes back to its original value.
+
 
 \subsubsection{Implementation}
+\paragraph{Chance}
+The way we implemented our new model for crossing is by removing the cooldown and replacing it by two variables. The first variable which is set randomly at the beginning and gives the standard recklessness of that person. The second variable that gives the current chance after all the influences. The second variable is in the beginning equal to the standard recklessness but is different after applying the influence factors.
 
-The way we implemented our new model for crossing is by replacing the cooldown value of the existing model by two new variables. The first variable which is set randomly at the beginning 
+The influence factors however don't have a permanent effect, the current value returns to the original value. We implemented this through a fixed point iteration. We have the function f(x) = r * sin((x-v)) + v, where r is the factor determine show fast the value converges and v the value to which we converge. The smaller r is, the quicker the value converges. When we input the current chance in f we get new chance which is the input for the next iteration. This way the value converges to v. In the figure below the convergence:
+
+Add figure here.
+
+\paragraph{Fine influence and experience}
+When a person gets a fine is current chance is lowered by valued of multiplying his current chance and the fine effectiveness and the effectiveness factor of getting a fine. So if the fine is 100 percent effective, and getting factor is 1, his crossing chance is set to 0. That person gets also a label that he is fined.  The formula: chance = chance - ( chance * fine effectiveness * getting factor).
+
+After all the crossing people are fined we look at the people near the fined people that are not fined themselves or saw already someone getting fined this round, therefore the label. Those people get their chance lowered by the value obtained by mutliplying their chance by the fine effectiveness and the factor for seeing. They get the label that hey saw someone The formula: chance = chance - ( chance * fine effectiveness * seeing factor).
+
+After that if there were people fined, we select random people that did not get a fine or saw someone getting a fine, that heared from someoen getting a fine. Their crossing chance is lowered similiar to those of seeing and getting, but only multiplied by the hearing factor. These people get the label that they heared. The formula: chance = chance - ( chance * fine effectiveness * hearing factor).
+
+The labels are reset when the persons appear again on the left side. 
+
+\paragraph{Surrounding people influence}
+This influence is not permanent and has only influence this time crossing the light. This is implemented by calculating a tempory chance when we look if the person will cross. We look at every person near and check if they cross, if they do we add a postive factor to the list and if they don't a negative factor. Then we average the list to get the average influence factor. We set the resulting influence factor to zero if it is negative. We cap the factor because a crossing person has less effect on the behaviour of the peron we look at if the other people also don't follow, but this does not mean that a person is more likely to stay if his neighbours don't cross.
+
+
+\paragraph{Crossing decision}
+We cap the resulting chance after all calculations at maximal 1, because you can't have chance of more than 100 percent to do something. After calculating the chance we look if there's is no car approaching and if so we take a random float between 0 and 1 and the person decides to cross if that float is smaller or equal to the crossing chance. If the person decided to cross he moves on the road and crosses otherwise he stays where he is and we calculate again the next tick.
 
 \clearpage
 
@@ -308,7 +330,7 @@ Interestingly increasing the number of cars only seem to result in a lower perce
 
 \begin{thebibliography}{3}
 
-	\bibitem{colbehaviour} Faria, Jolyon J., Stefan Krause, and Jens Krause. "Collective behavior in road crossing pedestrians: the role of social information." Behavioral ecology 21.6 (2010): 1236-1242.
+	\bibitem{colbehaviour} Faria, Jolyon J., Stefan Krause, and Jens Krause. "Collective behaviour in road crossing pedestrians: the role of social information." Behavioural ecology 21.6 (2010): 1236-1242.
 
 	\bibitem{drunkdrivers} Weatherburn, Don, and Steve Moffatt. "The specific deterrent effect of higher fines on drink-driving offenders." British journal of criminology 51.5 (2011): 789-803.
     
